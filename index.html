@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Befektetési napló</title>
+<script>
+  // Sötét mód beállítása még a tartalom megjelenése előtt, hogy ne villanjon fel a világos téma.
+  (function () {
+    try {
+      if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    } catch (e) {}
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F6F4EF;
+    --ink: #1B211F;
+    --ink-muted: #6B6A62;
+    --ink-faint: #96938A;
+    --accent: #1F5C4F;
+    --success: #2F7D5C;
+    --success-bg: #E7F0EA;
+    --danger: #A6432B;
+    --danger-bg: #F7E9E3;
+    --warn: #A9791E;
+    --warn-bg: #F3EBD8;
+    --line: #DAD5C8;
+    --line-soft: #E9E5DB;
+    --input-bg: #FFFFFF;
+    --tooltip-bg: #1B211F;
+    --cat-reszveny: #35577A;
+    --cat-kotveny: #5C7A72;
+    --cat-kripto: #B98B2E;
+    --cat-keszpenz: #8C8676;
+  }
+  [data-theme="dark"] {
+    --paper: #171C19;
+    --ink: #ECE8DE;
+    --ink-muted: #A9A599;
+    --ink-faint: #7D7A6E;
+    --accent: #4FB89B;
+    --success: #5CB88F;
+    --success-bg: #1E2B23;
+    --danger: #E08B6C;
+    --danger-bg: #332119;
+    --warn: #D9A94A;
+    --warn-bg: #332B18;
+    --line: #3A3A34;
+    --line-soft: #262622;
+    --input-bg: #20241F;
+    --tooltip-bg: #0E1210;
+    --cat-reszveny: #7FA3CC;
+    --cat-kotveny: #93B6A9;
+    --cat-kripto: #E0B564;
+    --cat-keszpenz: #ADA89C;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-font-smoothing: antialiased; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    margin: 0;
+    padding: 56px 24px 100px;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+  .page { max-width: 800px; margin: 0 auto; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 40px; }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 34px;
+    letter-spacing: -0.01em;
+    margin: 0 0 6px;
+  }
+  .lede { font-size: 14px; color: var(--ink-muted); margin: 0; max-width: 62ch; }
+
+  /* Belépő animáció */
+  .reveal { opacity: 0; transform: translateY(10px); transition: opacity 0.55s ease, transform 0.55s ease; }
+  .reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+  section { margin-bottom: 44px; }
+  .section-label {
+    font-size: 13px; color: var(--ink-muted); margin: 0 0 14px;
+    border-bottom: 1px solid var(--line); padding-bottom: 8px;
+    display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  }
+
+  .form-grid {
+    display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr auto;
+    gap: 14px; align-items: end;
+  }
+  label { display: block; font-size: 12px; color: var(--ink-muted); margin-bottom: 5px; }
+  input, select {
+    width: 100%; font-family: 'Inter', sans-serif; font-size: 14px;
+    padding: 9px 10px; border: 1px solid var(--line); border-radius: 3px;
+    background: var(--input-bg); color: var(--ink);
+  }
+  input:focus-visible, select:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 1px;
+  }
+  button {
+    font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
+    padding: 9px 16px; background: var(--ink); color: var(--paper);
+    border: none; border-radius: 3px; cursor: pointer; white-space: nowrap;
+  }
+  button:hover { background: var(--accent); color: #fff; }
+  button.ghost {
+    background: transparent; color: var(--ink); border: 1px solid var(--line);
+    padding: 7px 12px; font-size: 13px;
+  }
+  button.ghost:hover { background: var(--line-soft); color: var(--ink); }
+  #f-error { font-size: 13px; color: var(--danger); margin: 10px 0 0; }
+
+  .stat-row { display: flex; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .stat { flex: 1; padding: 18px 20px 18px 0; }
+  .stat + .stat { border-left: 1px solid var(--line-soft); padding-left: 20px; }
+  .stat p:first-child { font-size: 12px; color: var(--ink-muted); margin: 0 0 6px; }
+  .stat p:last-child { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 500; margin: 0; }
+  .sim-tag {
+    font-size: 11px; color: var(--warn); background: var(--warn-bg);
+    border-radius: 3px; padding: 1px 6px; margin-left: 8px; font-family: 'Inter', sans-serif; vertical-align: middle;
+  }
+
+  .best-worst { display: flex; gap: 32px; margin-top: 16px; font-size: 13px; flex-wrap: wrap; }
+  .best-worst span.label { color: var(--ink-muted); }
+
+  /* Portfólió-egészség */
+  .health-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .health-ring { width: 84px; height: 84px; flex-shrink: 0; }
+  .health-ring text { font-family: 'Fraunces', serif; }
+  .health-text { flex: 1; min-width: 220px; }
+  .health-text p { margin: 0 0 6px; font-size: 14px; line-height: 1.5; }
+  .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .badge-chip {
+    font-size: 12px; padding: 4px 11px; border-radius: 20px;
+    background: var(--line-soft); color: var(--ink-muted); display: inline-block;
+    animation: pop 0.4s ease both;
+  }
+  @keyframes pop { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+
+  .donut-row { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  .donut-col p { font-size: 13px; color: var(--ink-muted); text-align: center; margin: 0 0 8px; }
+  .chart-holder { position: relative; height: 160px; }
+  .legend { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 18px; font-size: 12px; color: var(--ink-muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 8px; height: 8px; border-radius: 1px; display: inline-block; }
+
+  /* Risk section */
+  .risk-summary { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+  .risk-gauge-track { flex: 1; height: 8px; background: var(--line-soft); border-radius: 4px; overflow: hidden; }
+  .risk-gauge-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease, background 0.3s ease; }
+  .risk-badge {
+    display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 20px;
+    font-weight: 500; white-space: nowrap;
+  }
+  .risk-low { background: var(--success-bg); color: var(--success); }
+  .risk-medium { background: var(--warn-bg); color: var(--warn); }
+  .risk-high { background: var(--danger-bg); color: var(--danger); }
+  .risk-warning {
+    font-size: 13px; background: var(--danger-bg); color: var(--danger);
+    padding: 10px 14px; border-radius: 4px; margin-top: 4px;
+  }
+
+  /* Simulator */
+  .sim-row { display: flex; align-items: center; gap: 16px; }
+  .sim-row input[type="range"] { flex: 1; accent-color: var(--accent); }
+  .sim-value { font-family: 'Fraunces', serif; font-size: 20px; min-width: 62px; text-align: right; }
+  .sim-desc { font-size: 12px; color: var(--ink-muted); margin-top: 10px; }
+
+  /* Piaci referencia (S&P 500) */
+  .sp500-holder { position: relative; height: 180px; }
+  .sp500-caption { font-size: 12px; color: var(--ink-faint); margin-top: 10px; }
+
+  /* Table toolbar */
+  .table-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 4px; flex-wrap: wrap; }
+  .table-toolbar select { width: auto; padding: 6px 8px; font-size: 13px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th {
+    text-align: left; font-weight: 500; font-size: 12px; color: var(--ink-muted);
+    padding: 0 4px 10px; border-bottom: 1px solid var(--line);
+  }
+  th button.sort-btn {
+    background: none; border: none; padding: 0; color: var(--ink-muted); font-size: 12px;
+    font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 3px;
+  }
+  th button.sort-btn:hover { color: var(--ink); }
+  th button.sort-btn .arrow { font-size: 10px; opacity: 0.5; }
+  th button.sort-btn[aria-sort="ascending"] .arrow,
+  th button.sort-btn[aria-sort="descending"] .arrow { opacity: 1; color: var(--accent); }
+  td { padding: 11px 4px; border-bottom: 1px solid var(--line-soft); }
+  tr:last-child td { border-bottom: 1px solid var(--line); }
+  .del {
+    border: none; background: transparent; color: var(--ink-faint);
+    cursor: pointer; font-size: 15px; padding: 2px 6px; border-radius: 3px;
+  }
+  .del:hover { color: var(--danger); background: var(--line-soft); }
+  #empty-state { font-size: 14px; color: var(--ink-faint); text-align: center; padding: 36px 0; }
+
+  footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 12px; color: var(--ink-faint); }
+
+  @media (max-width: 640px) {
+    .form-grid { grid-template-columns: 1fr 1fr; }
+    .stat-row { flex-direction: column; }
+    .stat + .stat { border-left: none; border-top: 1px solid var(--line-soft); padding-left: 0; padding-top: 14px; }
+    .donut-row { grid-template-columns: 1fr; }
+    table { font-size: 13px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1 !important; transform: none !important; }
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header-row reveal">
+    <div>
+      <h1>Befektetési napló</h1>
+      <p class="lede">Saját teszt-projekt: portfólió nyomon követése típusonként, kockázati besorolással, piaci szimulációval és élő piaci referenciával.</p>
+    </div>
+    <button class="ghost" id="theme-toggle">🌙 Sötét mód</button>
+  </div>
+
+  <section class="reveal">
+    <p class="section-label">Eszköz felvétele</p>
+    <div class="form-grid">
+      <div>
+        <label for="f-name">Eszköz neve</label>
+        <input type="text" id="f-name" placeholder="pl. OTP részvény" />
+      </div>
+      <div>
+        <label for="f-type">Típus</label>
+        <select id="f-type">
+          <option value="reszveny">Részvény</option>
+          <option value="kotveny">Kötvény</option>
+          <option value="kripto">Kripto</option>
+          <option value="keszpenz">Készpénz</option>
+        </select>
+      </div>
+      <div>
+        <label for="f-invested">Befektetett (Ft)</label>
+        <input type="number" id="f-invested" placeholder="500 000" min="0" />
+      </div>
+      <div>
+        <label for="f-current">Jelenlegi érték (Ft)</label>
+        <input type="number" id="f-current" placeholder="540 000" min="0" />
+      </div>
+      <button id="f-add">Hozzáad</button>
+    </div>
+    <p id="f-error" style="display:none;"></p>
+  </section>
+
+  <section class="reveal">
+    <p class="section-label">Összesítés</p>
+    <div class="stat-row">
+      <div class="stat">
+        <p>Összes befektetett</p>
+        <p class="num" id="s-invested">0 Ft</p>
+      </div>
+      <div class="stat">
+        <p>Jelenlegi érték <span class="sim-tag" id="sim-tag" style="display:none;">szimulált</span></p>
+        <p class="num" id="s-current">0 Ft</p>
+      </div>
+      <div class="stat">
+        <p>Összesített hozam</p>
+        <p class="num" id="s-return">0%</p>
+      </div>
+    </div>
+    <div class="best-worst" id="best-worst" style="display:none;">
+      <div><span class="label">Legjobb teljesítő —</span> <strong id="best-name"></strong></div>
+      <div><span class="label">Leggyengébb teljesítő —</span> <strong id="worst-name"></strong></div>
+    </div>
+  </section>
+
+  <section id="health-section" class="reveal" style="display:none;">
+    <p class="section-label">Portfólió-egészség</p>
+    <div class="health-row">
+      <div class="health-ring" id="health-ring"></div>
+      <div class="health-text">
+        <p><strong id="health-label">–</strong></p>
+        <p id="health-narrative" style="color:var(--ink-muted);"></p>
+        <div class="badge-row" id="badge-row"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sim-section" class="reveal" style="display:none;">
+    <p class="section-label">„Mi lenne, ha” piaci szimulátor</p>
+    <div class="sim-row">
+      <input type="range" id="sim-slider" min="-20" max="20" value="0" step="1" aria-label="Feltételezett piaci elmozdulás százalékban" />
+      <span class="sim-value num" id="sim-value">0%</span>
+      <button class="ghost" id="sim-reset">Visszaállítás</button>
+    </div>
+    <p class="sim-desc">A csúszka egy feltételezett piaci elmozdulást szimulál, típusonként eltérő érzékenységgel (a kripto jobban mozog, mint a kötvény vagy a készpénz). A befektetett összeg nem változik, csak a jelenlegi érték és az abból számolt mutatók.</p>
+  </section>
+
+  <section id="alloc-section" class="reveal" style="display:none;">
+    <p class="section-label">Megoszlás típus szerint</p>
+    <div class="donut-row">
+      <div class="donut-col">
+        <p>Befektetett</p>
+        <div class="chart-holder"><canvas id="chart-inv"></canvas></div>
+      </div>
+      <div class="donut-col">
+        <p>Jelenlegi érték</p>
+        <div class="chart-holder"><canvas id="chart-cur"></canvas></div>
+      </div>
+    </div>
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--cat-reszveny);"></span>Részvény</span>
+      <span><span class="swatch" style="background:var(--cat-kotveny);"></span>Kötvény</span>
+      <span><span class="swatch" style="background:var(--cat-kripto);"></span>Kripto</span>
+      <span><span class="swatch" style="background:var(--cat-keszpenz);"></span>Készpénz</span>
+    </div>
+  </section>
+
+  <section id="risk-section" class="reveal" style="display:none;">
+    <p class="section-label">Kockázati profil</p>
+    <div class="risk-summary">
+      <div class="risk-gauge-track"><div class="risk-gauge-fill" id="risk-gauge"></div></div>
+      <span class="risk-badge" id="risk-badge">–</span>
+    </div>
+    <p class="risk-warning" id="risk-warning" style="display:none;"></p>
+  </section>
+
+  <section class="reveal">
+    <p class="section-label">Piaci referencia — S&amp;P 500</p>
+    <div class="sp500-holder"><canvas id="chart-sp500"></canvas></div>
+    <p class="sp500-caption" id="sp500-caption">Élő adat betöltése…</p>
+  </section>
+
+  <section class="reveal">
+    <div class="table-toolbar">
+      <p class="section-label" style="border-bottom:none; padding-bottom:0; margin-bottom:0;">Tételek</p>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <select id="filter-type" aria-label="Szűrés típus szerint">
+          <option value="all">Minden típus</option>
+          <option value="reszveny">Részvény</option>
+          <option value="kotveny">Kötvény</option>
+          <option value="kripto">Kripto</option>
+          <option value="keszpenz">Készpénz</option>
+        </select>
+        <button class="ghost" id="export-xlsx">Excel exportálása</button>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th><button class="sort-btn" data-key="name">Eszköz <span class="arrow">▾</span></button></th>
+          <th><button class="sort-btn" data-key="type">Típus <span class="arrow">▾</span></button></th>
+          <th style="text-align:right;"><button class="sort-btn" data-key="invested">Befektetett <span class="arrow">▾</span></button></th>
+          <th style="text-align:right;"><button class="sort-btn" data-key="current">Jelenlegi <span class="arrow">▾</span></button></th>
+          <th style="text-align:right;"><button class="sort-btn" data-key="return">Hozam <span class="arrow">▾</span></button></th>
+          <th>Kockázat</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="holdings-body"></tbody>
+    </table>
+    <p id="empty-state">Még nincs felvett eszköz. Adj hozzá egyet fent.</p>
+  </section>
+
+  <footer class="reveal">Tóth György Milán — saját projekt: AI ügynökkel (Claude) épített, önállóan tesztelt és iteratívan finomított eszköz, 2026.</footer>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<script>
+const typeLabels = { reszveny: 'Részvény', kotveny: 'Kötvény', kripto: 'Kripto', keszpenz: 'Készpénz' };
+function currentTypeHex() {
+  return {
+    reszveny: getComputedStyle(document.documentElement).getPropertyValue('--cat-reszveny').trim(),
+    kotveny: getComputedStyle(document.documentElement).getPropertyValue('--cat-kotveny').trim(),
+    kripto: getComputedStyle(document.documentElement).getPropertyValue('--cat-kripto').trim(),
+    keszpenz: getComputedStyle(document.documentElement).getPropertyValue('--cat-keszpenz').trim(),
+  };
+}
+// score: 1 (alacsony) .. 5 (magas); sensitivity: relatív érzékenység a szimulátor mozgására
+const riskInfo = {
+  reszveny: { score: 3, sensitivity: 1.0 },
+  kotveny: { score: 1.5, sensitivity: 0.3 },
+  kripto: { score: 5, sensitivity: 2.5 },
+  keszpenz: { score: 1, sensitivity: 0 },
+};
+
+let holdings = [];
+let chartInv = null, chartCur = null, sp500Chart = null;
+let sp500Data = null;
+let simPct = 0;
+let sortKey = null, sortDir = 1;
+let filterType = 'all';
+
+const animState = { inv: 0, cur: 0, ret: 0 };
+const rafIds = {};
+const fmt = n => Math.round(n).toLocaleString('hu-HU') + ' Ft';
+const fmtPct = n => (n >= 0 ? '+' : '') + n.toFixed(1) + '%';
+const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+function riskTier(score) {
+  if (score >= 4) return { label: 'Magas', cls: 'risk-high', color: cssVar('--danger') };
+  if (score >= 2.2) return { label: 'Közepes', cls: 'risk-medium', color: cssVar('--warn') };
+  return { label: 'Alacsony', cls: 'risk-low', color: cssVar('--success') };
+}
+
+/* ---------- Belépő animáció ---------- */
+function initReveal() {
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll('.reveal').forEach((el, i) => {
+    if (reduced) { el.classList.add('is-visible'); return; }
+    setTimeout(() => el.classList.add('is-visible'), 60 + i * 90);
+  });
+}
+
+/* ---------- Sötét mód ---------- */
+function applyThemeLabel() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.getElementById('theme-toggle').textContent = isDark ? '☀️ Világos mód' : '🌙 Sötét mód';
+}
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (isDark) { document.documentElement.removeAttribute('data-theme'); }
+  else { document.documentElement.setAttribute('data-theme', 'dark'); }
+  try { localStorage.setItem('theme', isDark ? 'light' : 'dark'); } catch (e) {}
+  applyThemeLabel();
+  chartInv = null; chartCur = null; // színfrissítéshez újraépítjük a diagramokat
+  render();
+  if (sp500Data) renderSp500Chart(sp500Data.labels, sp500Data.closes);
+});
+
+function animateTo(key, el, to, formatFn, duration) {
+  if (rafIds[key]) cancelAnimationFrame(rafIds[key]);
+  const from = animState[key];
+  const start = performance.now();
+  function step(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - t, 3);
+    const val = from + (to - from) * eased;
+    animState[key] = val;
+    el.textContent = formatFn(val);
+    if (t < 1) { rafIds[key] = requestAnimationFrame(step); }
+    else { animState[key] = to; el.textContent = formatFn(to); delete rafIds[key]; }
+  }
+  rafIds[key] = requestAnimationFrame(step);
+}
+
+function buildDonut(canvasId, byTypeMap, existing) {
+  const typeHex = currentTypeHex();
+  const labels = [], data = [], colors = [];
+  Object.keys(typeLabels).forEach(t => {
+    if (byTypeMap[t] > 0) { labels.push(typeLabels[t]); data.push(Math.round(byTypeMap[t])); colors.push(typeHex[t]); }
+  });
+  if (existing) {
+    existing.data.labels = labels;
+    existing.data.datasets[0].data = data;
+    existing.data.datasets[0].backgroundColor = colors;
+    existing.update();
+    return existing;
+  }
+  return new Chart(document.getElementById(canvasId), {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: cssVar('--paper'), borderWidth: 2 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '68%',
+      animation: { duration: 1400, easing: 'easeOutCubic' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: cssVar('--tooltip-bg'), padding: 8, titleFont: { family: 'Inter' }, bodyFont: { family: 'Inter' },
+          callbacks: { label: (ctx) => ctx.label + ': ' + fmt(ctx.parsed) }
+        }
+      }
+    }
+  });
+}
+
+/* ---------- Portfólió-egészség pontszám ---------- */
+function computeHealth(rows, weightedRisk, totalRet) {
+  const distinctTypes = new Set(rows.map(r => r.type)).size;
+  const diversification = Math.min(distinctTypes / 4, 1);
+  const riskComponent = Math.max(0, Math.min(1, (5 - weightedRisk) / 4));
+  const retClamped = Math.max(-30, Math.min(30, totalRet));
+  const returnComponent = (retClamped + 30) / 60;
+  const score = Math.round(100 * (0.4 * diversification + 0.3 * riskComponent + 0.3 * returnComponent));
+  return { score, distinctTypes };
+}
+function healthTier(score) {
+  if (score >= 75) return { label: 'Kiváló állapot', cls: 'risk-low' };
+  if (score >= 55) return { label: 'Jó állapot', cls: 'risk-low' };
+  if (score >= 35) return { label: 'Kiegyensúlyozott', cls: 'risk-medium' };
+  return { label: 'Figyelmet igényel', cls: 'risk-high' };
+}
+function renderHealthRing(score, color) {
+  const el = document.getElementById('health-ring');
+  const dash = Math.max(0, Math.min(100, score));
+  el.innerHTML =
+    '<svg viewBox="0 0 36 36" width="84" height="84" role="img" aria-label="Portfólió-egészség pontszám: ' + score + ' / 100">' +
+    '<circle cx="18" cy="18" r="15.9155" fill="none" stroke="' + cssVar('--line-soft') + '" stroke-width="3"></circle>' +
+    '<circle cx="18" cy="18" r="15.9155" fill="none" stroke="' + color + '" stroke-width="3" stroke-linecap="round" ' +
+    'stroke-dasharray="' + dash + ' ' + (100 - dash) + '" transform="rotate(-90 18 18)"></circle>' +
+    '<text x="18" y="21" text-anchor="middle" font-size="10" fill="' + cssVar('--ink') + '">' + score + '</text>' +
+    '</svg>';
+}
+
+/* ---------- Élő piaci referencia: S&P 500 (Stooq.com) ---------- */
+async function loadSp500() {
+  const captionEl = document.getElementById('sp500-caption');
+  try {
+    const res = await fetch('https://stooq.com/q/d/l/?s=%5Espx&i=d');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    const lines = text.trim().split('\n').filter(Boolean);
+    if (lines.length < 2) throw new Error('Üres válasz');
+    const dataRows = lines.slice(1).map(l => l.split(','));
+    const recent = dataRows.slice(-120);
+    const labels = recent.map(r => r[0]);
+    const closes = recent.map(r => parseFloat(r[4]));
+    if (closes.some(isNaN)) throw new Error('Váratlan adatformátum');
+    sp500Data = { labels, closes };
+    renderSp500Chart(labels, closes);
+    captionEl.textContent = 'Forrás: Stooq.com — élő napi záróárak, az utolsó ' + closes.length + ' kereskedési nap. Tájékoztató jellegű piaci referencia, nem a saját portfóliód historikus adata.';
+  } catch (e) {
+    console.error('Az S&P 500 élő adat betöltése sikertelen:', e);
+    captionEl.textContent = 'Az élő piaci adat jelenleg nem érhető el innen (helyi fájlként megnyitva a böngésző gyakran blokkolja a külső lekérést — hosztolva, https-en keresztül megnyitva általában működik).';
+  }
+}
+function renderSp500Chart(labels, closes) {
+  const canvas = document.getElementById('chart-sp500');
+  if (!canvas) return;
+  if (sp500Chart) { sp500Chart.destroy(); }
+  sp500Chart = new Chart(canvas, {
+    type: 'line',
+    data: { labels, datasets: [{ data: closes, borderColor: cssVar('--accent'), backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.25 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 900 },
+      scales: {
+        x: { ticks: { color: cssVar('--ink-muted'), maxTicksLimit: 6, font: { family: 'Inter', size: 10 } }, grid: { color: cssVar('--line-soft') } },
+        y: { ticks: { color: cssVar('--ink-muted'), font: { family: 'Inter', size: 10 } }, grid: { color: cssVar('--line-soft') } },
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: { backgroundColor: cssVar('--tooltip-bg'), titleFont: { family: 'Inter' }, bodyFont: { family: 'Inter' } }
+      }
+    }
+  });
+}
+
+function effectiveCurrent(h) {
+  const sens = riskInfo[h.type].sensitivity;
+  return h.current * (1 + (simPct / 100) * sens);
+}
+
+function computeRows() {
+  return holdings.map((h, i) => {
+    const cur = effectiveCurrent(h);
+    const ret = h.invested > 0 ? ((cur - h.invested) / h.invested * 100) : 0;
+    return { ...h, index: i, effCurrent: cur, ret };
+  });
+}
+
+function exportExcel(rows) {
+  const header = ['Eszköz', 'Típus', 'Befektetett (Ft)', 'Jelenlegi érték (Ft)', 'Hozam (%)', 'Kockázat'];
+  const blankRow = ['', '', '', '', '', '', ''];
+  const aoa = [blankRow, ['', ...header]];
+  rows.forEach(r => {
+    const tier = riskTier(riskInfo[r.type].score);
+    aoa.push(['', r.name, typeLabels[r.type], Math.round(r.invested), Math.round(r.effCurrent), Number(r.ret.toFixed(1)), tier.label]);
+  });
+  aoa.push(blankRow);
+
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [{ wch: 23 }, { wch: 13 }, { wch: 17 }, { wch: 13 }, { wch: 11 }, { wch: 13 }, { wch: 13 }];
+
+  const thin = { style: 'thin', color: { rgb: 'FF000000' } };
+  const medium = { style: 'medium', color: { rgb: 'FF000000' } };
+  const successFill = { fgColor: { rgb: 'FFE7F0EA' } };
+  const dangerFill = { fgColor: { rgb: 'FFF7E9E3' } };
+  const successFont = { color: { rgb: 'FF2F7D5C' }, bold: true };
+  const dangerFont = { color: { rgb: 'FFA6432B' }, bold: true };
+  const headerRowIdx = 1;
+  const firstDataRow = 2;
+  const lastDataRow = 2 + rows.length - 1;
+  const firstCol = 1;
+  const lastCol = 6;
+
+  for (let c = firstCol; c <= lastCol; c++) {
+    const ref = XLSX.utils.encode_cell({ r: headerRowIdx, c });
+    if (!ws[ref]) continue;
+    ws[ref].s = {
+      font: { bold: true, color: { rgb: 'FF1B211F' } },
+      border: {
+        top: medium, bottom: medium,
+        left: c === firstCol ? medium : thin,
+        right: c === lastCol ? medium : thin,
+      },
+    };
+  }
+
+  rows.forEach((r, i) => {
+    const rowIdx = firstDataRow + i;
+    const isProfit = r.ret >= 0;
+    const fill = isProfit ? successFill : dangerFill;
+    for (let c = firstCol; c <= lastCol; c++) {
+      const ref = XLSX.utils.encode_cell({ r: rowIdx, c });
+      if (!ws[ref]) continue;
+      const style = {
+        fill,
+        border: {
+          top: rowIdx === firstDataRow ? undefined : thin,
+          bottom: rowIdx === lastDataRow ? medium : thin,
+          left: c === firstCol ? medium : thin,
+          right: c === lastCol ? medium : thin,
+        },
+      };
+      if (c === 3 || c === 4) style.numFmt = '#,##0';
+      if (c === 5) { style.numFmt = '0.0'; style.font = isProfit ? successFont : dangerFont; }
+      ws[ref].s = style;
+    }
+  });
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Portfólió');
+  const filename = 'befektetesi_portfolio' + (simPct !== 0 ? '_szimulalt_' + simPct + 'pct' : '') + '.xlsx';
+  XLSX.writeFile(wb, filename);
+}
+
+function render() {
+  let rows = computeRows();
+
+  let totalInv = 0, totalCur = 0;
+  const byTypeInv = {}, byTypeCur = {};
+  let best = null, worst = null;
+  let weightedRisk = 0;
+  rows.forEach(r => {
+    totalInv += r.invested; totalCur += r.effCurrent;
+    byTypeInv[r.type] = (byTypeInv[r.type] || 0) + r.invested;
+    byTypeCur[r.type] = (byTypeCur[r.type] || 0) + r.effCurrent;
+    if (!best || r.ret > best.ret) best = r;
+    if (!worst || r.ret < worst.ret) worst = r;
+  });
+  if (totalCur > 0) {
+    rows.forEach(r => { weightedRisk += (r.effCurrent / totalCur) * riskInfo[r.type].score; });
+  }
+  const totalRet = totalInv > 0 ? ((totalCur - totalInv) / totalInv * 100) : 0;
+
+  document.getElementById('sim-tag').style.display = simPct !== 0 ? 'inline-block' : 'none';
+  animateTo('inv', document.getElementById('s-invested'), totalInv, fmt, 900);
+  animateTo('cur', document.getElementById('s-current'), totalCur, fmt, 900);
+  const retEl = document.getElementById('s-return');
+  animateTo('ret', retEl, totalRet, fmtPct, 900);
+  retEl.style.color = totalRet >= 0 ? 'var(--success)' : 'var(--danger)';
+
+  const bw = document.getElementById('best-worst');
+  if (holdings.length >= 2) {
+    bw.style.display = 'flex';
+    document.getElementById('best-name').textContent = best.name + ' (' + fmtPct(best.ret) + ')';
+    document.getElementById('worst-name').textContent = worst.name + ' (' + fmtPct(worst.ret) + ')';
+  } else { bw.style.display = 'none'; }
+
+  document.getElementById('sim-section').style.display = holdings.length ? 'block' : 'none';
+
+  const allocSection = document.getElementById('alloc-section');
+  if (totalInv > 0 || totalCur > 0) {
+    allocSection.style.display = 'block';
+    try {
+      chartInv = buildDonut('chart-inv', byTypeInv, chartInv);
+      chartCur = buildDonut('chart-cur', byTypeCur, chartCur);
+    } catch (e) {
+      console.error('A diagramok nem tölthetők be:', e);
+      allocSection.style.display = 'none';
+    }
+  } else { allocSection.style.display = 'none'; }
+
+  const riskSection = document.getElementById('risk-section');
+  let tier = null;
+  if (holdings.length) {
+    riskSection.style.display = 'block';
+    tier = riskTier(weightedRisk);
+    document.getElementById('risk-gauge').style.width = Math.min(weightedRisk / 5 * 100, 100) + '%';
+    document.getElementById('risk-gauge').style.background = tier.color;
+    const badge = document.getElementById('risk-badge');
+    badge.textContent = tier.label + ' kockázat';
+    badge.className = 'risk-badge ' + tier.cls;
+
+    const warnEl = document.getElementById('risk-warning');
+    const highShare = totalCur > 0 ? (byTypeCur['kripto'] || 0) / totalCur : 0;
+    if (highShare > 0.4) {
+      warnEl.style.display = 'block';
+      warnEl.textContent = 'Figyelem: a portfólió ' + Math.round(highShare * 100) + '%-a magas kockázatú (kripto) eszközben koncentrálódik.';
+    } else { warnEl.style.display = 'none'; }
+  } else {
+    riskSection.style.display = 'none';
+  }
+
+  const healthSection = document.getElementById('health-section');
+  if (holdings.length && tier) {
+    healthSection.style.display = 'block';
+    const health = computeHealth(rows, weightedRisk, totalRet);
+    const hTier = healthTier(health.score);
+    renderHealthRing(health.score, cssVar(hTier.cls === 'risk-low' ? '--success' : hTier.cls === 'risk-medium' ? '--warn' : '--danger'));
+    document.getElementById('health-label').textContent = hTier.label + ' — ' + health.score + '/100';
+    const divText = health.distinctTypes >= 3 ? 'jól diverzifikált' : health.distinctTypes === 2 ? 'részben diverzifikált' : 'koncentrált, kevéssé diverzifikált';
+    document.getElementById('health-narrative').textContent =
+      'A portfólió ' + divText + ', ' + tier.label.toLowerCase() + ' kockázati szinten áll, összesített hozama ' + fmtPct(totalRet) + '.';
+
+    const badges = [];
+    if (health.distinctTypes >= 3) badges.push('Diverzifikált portfólió');
+    if (rows.some(r => r.ret > 0)) badges.push('Van nyereséges eszköz');
+    if (weightedRisk < 2.5) badges.push('Kiegyensúlyozott kockázat');
+    if (totalRet > 0) badges.push('Pozitív összhozam');
+    const badgeRow = document.getElementById('badge-row');
+    badgeRow.innerHTML = badges.map(b => '<span class="badge-chip">' + b + '</span>').join('');
+  } else {
+    healthSection.style.display = 'none';
+  }
+
+  let viewRows = filterType === 'all' ? rows : rows.filter(r => r.type === filterType);
+  if (sortKey) {
+    viewRows = [...viewRows].sort((a, b) => {
+      let av, bv;
+      if (sortKey === 'name') { av = a.name.toLowerCase(); bv = b.name.toLowerCase(); }
+      else if (sortKey === 'type') { av = typeLabels[a.type]; bv = typeLabels[b.type]; }
+      else if (sortKey === 'invested') { av = a.invested; bv = b.invested; }
+      else if (sortKey === 'current') { av = a.effCurrent; bv = b.effCurrent; }
+      else if (sortKey === 'return') { av = a.ret; bv = b.ret; }
+      if (av < bv) return -1 * sortDir;
+      if (av > bv) return 1 * sortDir;
+      return 0;
+    });
+  }
+
+  const body = document.getElementById('holdings-body');
+  body.innerHTML = '';
+  document.getElementById('empty-state').style.display = viewRows.length ? 'none' : 'block';
+  document.getElementById('empty-state').textContent = holdings.length
+    ? 'Nincs a szűrésnek megfelelő tétel.'
+    : 'Még nincs felvett eszköz. Adj hozzá egyet fent.';
+
+  viewRows.forEach(r => {
+    const retColor = r.ret >= 0 ? 'var(--success)' : 'var(--danger)';
+    const rowTier = riskTier(riskInfo[r.type].score);
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + r.name + '</td>' +
+      '<td style="color:var(--ink-muted);">' + typeLabels[r.type] + '</td>' +
+      '<td class="num" style="text-align:right;">' + fmt(r.invested) + '</td>' +
+      '<td class="num" style="text-align:right;">' + fmt(r.effCurrent) + '</td>' +
+      '<td class="num" style="text-align:right; color:' + retColor + ';">' + fmtPct(r.ret) + '</td>' +
+      '<td><span class="risk-badge ' + rowTier.cls + '">' + rowTier.label + '</span></td>' +
+      '<td style="text-align:center;"><button data-i="' + r.index + '" class="del" aria-label="Törlés">✕</button></td>';
+    body.appendChild(tr);
+  });
+
+  document.querySelectorAll('.del').forEach(btn => {
+    btn.addEventListener('click', () => { holdings.splice(parseInt(btn.dataset.i), 1); render(); });
+  });
+
+  document.getElementById('export-xlsx').onclick = () => {
+    try { exportExcel(viewRows); }
+    catch (e) {
+      console.error('Az Excel export nem sikerült:', e);
+      alert('Az Excel export jelenleg nem sikerült. Ellenőrizd az internetkapcsolatot, majd próbáld újra.');
+    }
+  };
+
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    const key = btn.dataset.key;
+    btn.setAttribute('aria-sort', sortKey === key ? (sortDir === 1 ? 'ascending' : 'descending') : 'none');
+    btn.querySelector('.arrow').textContent = sortKey === key ? (sortDir === 1 ? '▴' : '▾') : '▾';
+  });
+}
+
+document.getElementById('f-add').addEventListener('click', () => {
+  const name = document.getElementById('f-name').value.trim();
+  const type = document.getElementById('f-type').value;
+  const invested = parseFloat(document.getElementById('f-invested').value);
+  const current = parseFloat(document.getElementById('f-current').value);
+  const errEl = document.getElementById('f-error');
+  if (!name || isNaN(invested) || isNaN(current) || invested < 0 || current < 0) {
+    errEl.textContent = 'Add meg az eszköz nevét és érvényes, nem negatív összegeket.';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+  holdings.push({ name, type, invested, current });
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-invested').value = '';
+  document.getElementById('f-current').value = '';
+  render();
+});
+
+document.getElementById('sim-slider').addEventListener('input', (e) => {
+  simPct = parseInt(e.target.value, 10);
+  document.getElementById('sim-value').textContent = (simPct > 0 ? '+' : '') + simPct + '%';
+  render();
+});
+document.getElementById('sim-reset').addEventListener('click', () => {
+  simPct = 0;
+  document.getElementById('sim-slider').value = 0;
+  document.getElementById('sim-value').textContent = '0%';
+  render();
+});
+
+document.getElementById('filter-type').addEventListener('change', (e) => {
+  filterType = e.target.value;
+  render();
+});
+
+document.querySelectorAll('.sort-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const key = btn.dataset.key;
+    if (sortKey === key) { sortDir *= -1; } else { sortKey = key; sortDir = 1; }
+    render();
+  });
+});
+
+applyThemeLabel();
+initReveal();
+render();
+loadSp500();
+</script>
+</body>
+</html>
