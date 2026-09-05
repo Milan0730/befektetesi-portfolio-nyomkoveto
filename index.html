@@ -335,7 +335,10 @@
   </section>
 
   <section class="reveal">
-    <p class="section-label">Piaci referencia — S&amp;P 500</p>
+    <p class="section-label">
+      Piaci referencia — S&amp;P 500
+      <button class="ghost" id="sp500-retry" style="font-size:12px; padding:4px 10px;">Frissítés</button>
+    </p>
     <div class="sp500-holder"><canvas id="chart-sp500"></canvas></div>
     <p class="sp500-caption" id="sp500-caption">Élő adat betöltése…</p>
   </section>
@@ -516,24 +519,39 @@ function renderHealthRing(score, color) {
 /* ---------- Élő piaci referencia: S&P 500 (Stooq.com) ---------- */
 async function loadSp500() {
   const captionEl = document.getElementById('sp500-caption');
-  try {
-    const res = await fetch('https://stooq.com/q/d/l/?s=%5Espx&i=d');
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const text = await res.text();
-    const lines = text.trim().split('\n').filter(Boolean);
-    if (lines.length < 2) throw new Error('Üres válasz');
-    const dataRows = lines.slice(1).map(l => l.split(','));
-    const recent = dataRows.slice(-120);
-    const labels = recent.map(r => r[0]);
-    const closes = recent.map(r => parseFloat(r[4]));
-    if (closes.some(isNaN)) throw new Error('Váratlan adatformátum');
-    sp500Data = { labels, closes };
-    renderSp500Chart(labels, closes);
-    captionEl.textContent = 'Forrás: Stooq.com — élő napi záróárak, az utolsó ' + closes.length + ' kereskedési nap. Tájékoztató jellegű piaci referencia, nem a saját portfóliód historikus adata.';
-  } catch (e) {
-    console.error('Az S&P 500 élő adat betöltése sikertelen:', e);
-    captionEl.textContent = 'Az élő piaci adat jelenleg nem érhető el innen (helyi fájlként megnyitva a böngésző gyakran blokkolja a külső lekérést — hosztolva, https-en keresztül megnyitva általában működik).';
+  captionEl.textContent = 'Élő adat betöltése…';
+  const target = 'https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?range=6mo&interval=1d';
+  // Több próbálkozás: közvetlen lekérés, majd (ha a szerver nem enged CORS-t
+  // a mi eredetünknek) CORS-t engedélyező proxykon keresztül.
+  const attempts = [
+    target,
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(target),
+    'https://corsproxy.io/?url=' + encodeURIComponent(target),
+  ];
+  for (let i = 0; i < attempts.length; i++) {
+    try {
+      const res = await fetch(attempts[i]);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      // Ha bot-elleni ellenőrzési oldalt vagy egyéb HTML-t kapunk JSON helyett, azt egyértelműen jelezzük.
+      if (!text.trim().startsWith('{')) throw new Error('Nem JSON válasz érkezett (valószínűleg bot-ellenőrzés vagy proxy-hiba)');
+      const json = JSON.parse(text);
+      const result = json && json.chart && json.chart.result && json.chart.result[0];
+      const timestamps = result && result.timestamp;
+      const closes = result && result.indicators && result.indicators.quote && result.indicators.quote[0] && result.indicators.quote[0].close;
+      if (!timestamps || !closes || !closes.length) throw new Error('Váratlan adatszerkezet');
+      const labels = timestamps.map(ts => new Date(ts * 1000).toLocaleDateString('hu-HU', { month: '2-digit', day: '2-digit' }));
+      const cleanCloses = closes.map(v => (typeof v === 'number' ? Math.round(v * 100) / 100 : null));
+      if (cleanCloses.every(v => v === null)) throw new Error('Üres árfolyam-sorozat');
+      sp500Data = { labels, closes: cleanCloses };
+      renderSp500Chart(labels, cleanCloses);
+      captionEl.textContent = 'Forrás: Yahoo Finance — élő napi záróárak (S&P 500, ^GSPC), az utolsó kb. 6 hónap. Tájékoztató jellegű piaci referencia, nem a saját portfóliód historikus adata.';
+      return;
+    } catch (e) {
+      console.error('S&P 500 próbálkozás sikertelen (' + attempts[i] + '):', e);
+    }
   }
+  captionEl.textContent = 'Az élő piaci adat jelenleg egyik forrásból sem érhető el (hálózati, bot-védelmi vagy CORS-korlátozás). Próbáld meg a "Frissítés" gombbal — ha tartósan nem megy, ez egy külső adatforrás megbízhatósági korlátja, nem a saját kódod hibája.';
 }
 function renderSp500Chart(labels, closes) {
   const canvas = document.getElementById('chart-sp500');
@@ -828,6 +846,7 @@ applyThemeLabel();
 initReveal();
 render();
 loadSp500();
+document.getElementById('sp500-retry').addEventListener('click', loadSp500);
 </script>
 </body>
 </html>
