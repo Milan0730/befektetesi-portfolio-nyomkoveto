@@ -179,6 +179,15 @@
   /* Piaci referencia (S&P 500) */
   .sp500-holder { position: relative; height: 180px; }
   .sp500-caption { font-size: 12px; color: var(--ink-faint); margin-top: 10px; }
+  .api-key-row { display: flex; gap: 8px; margin-bottom: 14px; }
+  .api-key-row input { flex: 1; }
+
+  /* Historikus nyomkövetés */
+  .history-holder { position: relative; height: 160px; }
+  .history-empty { font-size: 13px; color: var(--ink-faint); padding: 20px 0; text-align: center; }
+
+  /* Fájlműveletek (mentés/betöltés) */
+  .file-ops { display: flex; gap: 8px; }
 
   /* Table toolbar */
   .table-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 4px; flex-wrap: wrap; }
@@ -229,7 +238,14 @@
       <h1>Befektetési napló</h1>
       <p class="lede">Saját teszt-projekt: portfólió nyomon követése típusonként, kockázati besorolással, piaci szimulációval és élő piaci referenciával.</p>
     </div>
-    <button class="ghost" id="theme-toggle">🌙 Sötét mód</button>
+    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
+      <button class="ghost" id="theme-toggle">🌙 Sötét mód</button>
+      <div class="file-ops">
+        <button class="ghost" id="save-json">Mentés fájlba</button>
+        <button class="ghost" id="load-json">Betöltés fájlból</button>
+        <input type="file" id="load-json-input" accept="application/json" style="display:none;" />
+      </div>
+    </div>
   </div>
 
   <section class="reveal">
@@ -295,6 +311,15 @@
     </div>
   </section>
 
+  <section id="history-section" class="reveal" style="display:none;">
+    <p class="section-label">Historikus nyomkövetés (saját eszköz-előzmény)</p>
+    <div id="history-chart-wrap">
+      <div class="history-holder"><canvas id="chart-history"></canvas></div>
+    </div>
+    <p class="history-empty" id="history-empty" style="display:none;"></p>
+    <p class="sp500-caption">Ez a görbe kizárólag ebben a böngészőben, ezen a gépen rögzített napi állapotokon alapul — minden alkalommal frissül, amikor megnyitod és van felvett eszközöd. Idővel valódi, saját historikus adatsorrá épül.</p>
+  </section>
+
   <section id="sim-section" class="reveal" style="display:none;">
     <p class="section-label">„Mi lenne, ha” piaci szimulátor</p>
     <div class="sim-row">
@@ -339,7 +364,15 @@
       Piaci referencia — S&amp;P 500 (VOO ETF)
       <button class="ghost" id="sp500-retry" style="font-size:12px; padding:4px 10px;">Frissítés</button>
     </p>
+    <div class="api-key-row" id="api-key-row" style="display:none;">
+      <input type="text" id="api-key-input" placeholder="Alpha Vantage API-kulcs (ingyenes: alphavantage.co/support/#api-key)" />
+      <button id="api-key-save">Mentés</button>
+    </div>
     <div class="sp500-holder"><canvas id="chart-sp500"></canvas></div>
+    <div class="legend" id="sp500-legend" style="display:none;">
+      <span><span class="swatch" style="background:var(--accent); border-radius:50%;"></span>VOO (S&amp;P 500) — relatív elmozdulás az időszak alatt</span>
+      <span><span class="swatch" style="background:var(--ink-muted); border-radius:50%;"></span>Saját portfólió — jelenlegi összhozam (nem idősor)</span>
+    </div>
     <p class="sp500-caption" id="sp500-caption">Élő adat betöltése…</p>
   </section>
 
@@ -398,7 +431,20 @@ const riskInfo = {
   keszpenz: { score: 1, sensitivity: 0 },
 };
 
-let holdings = [];
+function loadHoldingsFromStorage() {
+  try {
+    const raw = localStorage.getItem('portfolio_holdings');
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(h => h && typeof h.name === 'string' && typeLabels[h.type] && typeof h.invested === 'number' && typeof h.current === 'number');
+  } catch (e) {
+    console.error('A korábbi adatok betöltése sikertelen:', e);
+    return [];
+  }
+}
+
+let holdings = loadHoldingsFromStorage();
 let chartInv = null, chartCur = null, sp500Chart = null;
 let sp500Data = null;
 let simPct = 0;
@@ -439,7 +485,6 @@ document.getElementById('theme-toggle').addEventListener('click', () => {
   applyThemeLabel();
   chartInv = null; chartCur = null; // színfrissítéshez újraépítjük a diagramokat
   render();
-  if (sp500Data) renderSp500Chart(sp500Data.labels, sp500Data.closes);
 });
 
 function animateTo(key, el, to, formatFn, duration) {
@@ -516,19 +561,26 @@ function renderHealthRing(score, color) {
     '</svg>';
 }
 
-/* ---------- Élő piaci referencia: S&P 500 (Stooq.com) ---------- */
-// Ingyenes API-kulcs innen: https://www.alphavantage.co/support/#api-key (kb. 30 másodperc, nincs bankkártya).
-// Illeszd be az idézőjelek közé, hogy működjön az élő piaci grafikon.
-const ALPHA_VANTAGE_API_KEY = 'DFDJRV0KUB37XIKO';
+/* ---------- Élő piaci referencia: S&P 500 / VOO (Alpha Vantage) ---------- */
+function getApiKey() {
+  try { return localStorage.getItem('av_api_key') || ''; } catch (e) { return ''; }
+}
+function setApiKey(key) {
+  try { localStorage.setItem('av_api_key', key); } catch (e) {}
+}
 
 async function loadSp500() {
   const captionEl = document.getElementById('sp500-caption');
-  if (!ALPHA_VANTAGE_API_KEY || ALPHA_VANTAGE_API_KEY === 'IDE_IRD_BE_A_SAJAT_KULCSOD') {
-    captionEl.textContent = 'Élő adat megjelenítéséhez adj meg egy ingyenes Alpha Vantage API-kulcsot a fájl elején (alphavantage.co/support/#api-key).';
+  const keyRow = document.getElementById('api-key-row');
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    keyRow.style.display = 'flex';
+    captionEl.textContent = 'Élő adat megjelenítéséhez adj meg egy ingyenes Alpha Vantage API-kulcsot fent (kb. 30 másodperc, nincs bankkártya: alphavantage.co/support/#api-key).';
     return;
   }
+  keyRow.style.display = 'none';
   captionEl.textContent = 'Élő adat betöltése…';
-  const target = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=VOO&outputsize=compact&apikey=' + encodeURIComponent(ALPHA_VANTAGE_API_KEY);
+  const target = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=VOO&outputsize=compact&apikey=' + encodeURIComponent(apiKey);
   const attempts = [
     target,
     'https://api.allorigins.win/raw?url=' + encodeURIComponent(target),
@@ -549,31 +601,60 @@ async function loadSp500() {
       const closes = recent.map(d => Math.round(parseFloat(series[d]['4. close']) * 100) / 100);
       if (closes.some(isNaN) || closes.length === 0) throw new Error('Hibás árfolyam-adat');
       sp500Data = { labels, closes };
-      renderSp500Chart(labels, closes);
-      captionEl.textContent = 'Forrás: Alpha Vantage — VOO (Vanguard S&P 500 ETF) élő napi záróárai, az utolsó ' + closes.length + ' kereskedési nap. Az index helyett a rá épülő, tőzsdén kereskedett ETF-et mutatja, ami gyakorlatilag 1:1 leköveti azt.';
+      render();
+      captionEl.textContent = 'Forrás: Alpha Vantage — VOO (Vanguard S&P 500 ETF) élő napi záróárai, az utolsó ' + closes.length + ' kereskedési nap. Az index helyett a rá épülő, tőzsdén kereskedett ETF-et mutatja, ami gyakorlatilag 1:1 leköveti azt. A szaggatott vonal a portfóliód jelenlegi összhozama — nem valós idősor, mert az eszköz eddig nem mentette a korábbi állapotokat.';
       return;
     } catch (e) {
       console.error('S&P 500 próbálkozás sikertelen (' + attempts[i] + '):', e);
     }
   }
-  captionEl.textContent = 'Az élő piaci adat jelenleg nem érhető el (hálózati hiba vagy elért napi lekérési limit). Próbáld meg később a "Frissítés" gombbal.';
+  captionEl.textContent = 'Az élő piaci adat jelenleg nem érhető el (hálózati hiba, érvénytelen kulcs, vagy elért napi lekérési limit). Próbáld meg később a "Frissítés" gombbal.';
 }
-function renderSp500Chart(labels, closes) {
+function renderSp500Chart(labels, closes, portfolioReturnPct) {
   const canvas = document.getElementById('chart-sp500');
   if (!canvas) return;
+  document.getElementById('sp500-legend').style.display = 'flex';
+  // A VOO záróárait az időszak eleji értékhez viszonyított % változássá alakítjuk,
+  // hogy összevethető legyen a portfólió %-os hozamával (más-más nagyságrendű nyers árak helyett).
+  const base = closes[0];
+  const pctSeries = closes.map(c => Math.round(((c - base) / base) * 1000) / 10);
+  const datasets = [{
+    label: 'VOO (S&P 500)',
+    data: pctSeries,
+    borderColor: cssVar('--accent'),
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    pointRadius: 0,
+    tension: 0.25,
+  }];
+  if (portfolioReturnPct !== null && portfolioReturnPct !== undefined) {
+    datasets.push({
+      label: 'Saját portfólió (jelenlegi összhozam)',
+      data: labels.map(() => portfolioReturnPct),
+      borderColor: cssVar('--ink-muted'),
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      borderDash: [6, 4],
+      pointRadius: 0,
+      tension: 0,
+    });
+  }
   if (sp500Chart) { sp500Chart.destroy(); }
   sp500Chart = new Chart(canvas, {
     type: 'line',
-    data: { labels, datasets: [{ data: closes, borderColor: cssVar('--accent'), backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.25 }] },
+    data: { labels, datasets },
     options: {
       responsive: true, maintainAspectRatio: false, animation: { duration: 900 },
       scales: {
         x: { ticks: { color: cssVar('--ink-muted'), maxTicksLimit: 6, font: { family: 'Inter', size: 10 } }, grid: { color: cssVar('--line-soft') } },
-        y: { ticks: { color: cssVar('--ink-muted'), font: { family: 'Inter', size: 10 } }, grid: { color: cssVar('--line-soft') } },
+        y: { ticks: { color: cssVar('--ink-muted'), font: { family: 'Inter', size: 10 }, callback: (v) => v + '%' }, grid: { color: cssVar('--line-soft') } },
       },
       plugins: {
         legend: { display: false },
-        tooltip: { backgroundColor: cssVar('--tooltip-bg'), titleFont: { family: 'Inter' }, bodyFont: { family: 'Inter' } }
+        tooltip: {
+          backgroundColor: cssVar('--tooltip-bg'), titleFont: { family: 'Inter' }, bodyFont: { family: 'Inter' },
+          callbacks: { label: (ctx) => ctx.dataset.label + ': ' + (ctx.parsed.y >= 0 ? '+' : '') + ctx.parsed.y.toFixed(1) + '%' }
+        }
       }
     }
   });
@@ -589,6 +670,94 @@ function computeRows() {
     const cur = effectiveCurrent(h);
     const ret = h.invested > 0 ? ((cur - h.invested) / h.invested * 100) : 0;
     return { ...h, index: i, effCurrent: cur, ret };
+  });
+}
+
+/* ---------- Mentés/betöltés fájlba (JSON) ---------- */
+function exportHoldingsJson() {
+  const data = JSON.stringify(holdings, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'befektetesi_portfolio_adatok.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function importHoldingsJson(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      if (!Array.isArray(parsed)) throw new Error('A fájl nem eszközlistát tartalmaz.');
+      const valid = parsed.filter(h => h && typeof h.name === 'string' && typeLabels[h.type] && typeof h.invested === 'number' && typeof h.current === 'number');
+      if (!valid.length) throw new Error('Nem található érvényes eszköz a fájlban.');
+      holdings = valid;
+      render();
+    } catch (e) {
+      console.error('A fájl betöltése sikertelen:', e);
+      alert('A fájl betöltése nem sikerült: érvénytelen vagy sérült JSON. (' + e.message + ')');
+    }
+  };
+  reader.onerror = () => alert('A fájl beolvasása sikertelen.');
+  reader.readAsText(file);
+}
+
+/* ---------- Historikus nyomkövetés (localStorage pillanatképek) ---------- */
+function loadHistoryLog() {
+  try {
+    const raw = localStorage.getItem('portfolio_history_log');
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) { return []; }
+}
+let historyLog = loadHistoryLog();
+
+function saveHistorySnapshot(totalInv, totalCur, totalRet) {
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const entry = { date: todayKey, invested: Math.round(totalInv), current: Math.round(totalCur), returnPct: Math.round(totalRet * 10) / 10 };
+  const idx = historyLog.findIndex(h => h.date === todayKey);
+  if (idx >= 0) historyLog[idx] = entry; else historyLog.push(entry);
+  historyLog.sort((a, b) => a.date.localeCompare(b.date));
+  try { localStorage.setItem('portfolio_history_log', JSON.stringify(historyLog)); } catch (e) {}
+}
+
+let historyChart = null;
+function renderHistoryChart() {
+  const wrap = document.getElementById('history-chart-wrap');
+  const emptyEl = document.getElementById('history-empty');
+  if (historyLog.length < 2) {
+    wrap.style.display = 'none';
+    emptyEl.style.display = 'block';
+    emptyEl.textContent = historyLog.length === 0
+      ? 'Még nincs rögzített mérés. Nyisd meg az eszközt legalább két különböző napon, hogy görbe épüljön.'
+      : 'Eddig 1 nap van rögzítve (' + historyLog[0].date + '). Nyisd meg máskor is, hogy összehasonlítható historikus görbe legyen.';
+    return;
+  }
+  wrap.style.display = 'block';
+  emptyEl.style.display = 'none';
+  const labels = historyLog.map(h => h.date.slice(5));
+  const data = historyLog.map(h => h.returnPct);
+  if (historyChart) { historyChart.destroy(); }
+  historyChart = new Chart(document.getElementById('chart-history'), {
+    type: 'line',
+    data: { labels, datasets: [{ data, borderColor: cssVar('--accent'), backgroundColor: 'transparent', borderWidth: 2, pointRadius: 3, pointBackgroundColor: cssVar('--accent'), tension: 0.2 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 700 },
+      scales: {
+        x: { ticks: { color: cssVar('--ink-muted'), font: { family: 'Inter', size: 10 } }, grid: { color: cssVar('--line-soft') } },
+        y: { ticks: { color: cssVar('--ink-muted'), font: { family: 'Inter', size: 10 }, callback: (v) => v + '%' }, grid: { color: cssVar('--line-soft') } },
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: cssVar('--tooltip-bg'), titleFont: { family: 'Inter' }, bodyFont: { family: 'Inter' },
+          callbacks: { label: (ctx) => 'Összhozam: ' + (ctx.parsed.y >= 0 ? '+' : '') + ctx.parsed.y.toFixed(1) + '%' }
+        }
+      }
+    }
   });
 }
 
@@ -683,6 +852,24 @@ function render() {
   const retEl = document.getElementById('s-return');
   animateTo('ret', retEl, totalRet, fmtPct, 900);
   retEl.style.color = totalRet >= 0 ? 'var(--success)' : 'var(--danger)';
+
+  if (sp500Data) {
+    try { renderSp500Chart(sp500Data.labels, sp500Data.closes, holdings.length ? totalRet : null); }
+    catch (e) { console.error('Az S&P 500 diagram nem tölthető be:', e); }
+  }
+
+  try { localStorage.setItem('portfolio_holdings', JSON.stringify(holdings)); } catch (e) {}
+
+  const historySection = document.getElementById('history-section');
+  if (holdings.length) {
+    historySection.style.display = 'block';
+    // Csak valós (nem szimulált) állapotot rögzítünk, hogy a historikus görbe ne torzuljon.
+    if (simPct === 0) { saveHistorySnapshot(totalInv, totalCur, totalRet); }
+    try { renderHistoryChart(); }
+    catch (e) { console.error('A historikus diagram nem tölthető be:', e); }
+  } else {
+    historySection.style.display = 'none';
+  }
 
   const bw = document.getElementById('best-worst');
   if (holdings.length >= 2) {
@@ -845,6 +1032,23 @@ document.querySelectorAll('.sort-btn').forEach(btn => {
     if (sortKey === key) { sortDir *= -1; } else { sortKey = key; sortDir = 1; }
     render();
   });
+});
+
+document.getElementById('save-json').addEventListener('click', exportHoldingsJson);
+document.getElementById('load-json').addEventListener('click', () => {
+  document.getElementById('load-json-input').click();
+});
+document.getElementById('load-json-input').addEventListener('change', (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (file) importHoldingsJson(file);
+  e.target.value = '';
+});
+
+document.getElementById('api-key-save').addEventListener('click', () => {
+  const val = document.getElementById('api-key-input').value.trim();
+  if (!val) return;
+  setApiKey(val);
+  loadSp500();
 });
 
 applyThemeLabel();
