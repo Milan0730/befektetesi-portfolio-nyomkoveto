@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Befektetési napló</title>
 <script>
-  // Sötét mód beállítása még a tartalom megjelenése előtt, hogy ne villanjon fel a világos téma.
   (function () {
     try {
       if (localStorage.getItem('theme') === 'dark') {
@@ -19,210 +18,120 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --paper: #F6F4EF;
-    --ink: #1B211F;
-    --ink-muted: #6B6A62;
-    --ink-faint: #96938A;
-    --accent: #1F5C4F;
-    --success: #2F7D5C;
-    --success-bg: #E7F0EA;
-    --danger: #A6432B;
-    --danger-bg: #F7E9E3;
-    --warn: #A9791E;
-    --warn-bg: #F3EBD8;
-    --line: #DAD5C8;
-    --line-soft: #E9E5DB;
-    --input-bg: #FFFFFF;
-    --tooltip-bg: #1B211F;
-    --cat-reszveny: #35577A;
-    --cat-kotveny: #5C7A72;
-    --cat-kripto: #B98B2E;
-    --cat-keszpenz: #8C8676;
+    --paper: #F6F4EF; --ink: #1B211F; --ink-muted: #6B6A62; --ink-faint: #96938A;
+    --accent: #1F5C4F; --success: #2F7D5C; --success-bg: #E7F0EA;
+    --danger: #A6432B; --danger-bg: #F7E9E3; --warn: #A9791E; --warn-bg: #F3EBD8;
+    --line: #DAD5C8; --line-soft: #E9E5DB; --input-bg: #FFFFFF; --tooltip-bg: #1B211F;
+    --cat-reszveny: #35577A; --cat-kotveny: #5C7A72; --cat-kripto: #B98B2E; --cat-keszpenz: #8C8676;
   }
   [data-theme="dark"] {
-    --paper: #171C19;
-    --ink: #ECE8DE;
-    --ink-muted: #A9A599;
-    --ink-faint: #7D7A6E;
-    --accent: #4FB89B;
-    --success: #5CB88F;
-    --success-bg: #1E2B23;
-    --danger: #E08B6C;
-    --danger-bg: #332119;
-    --warn: #D9A94A;
-    --warn-bg: #332B18;
-    --line: #3A3A34;
-    --line-soft: #262622;
-    --input-bg: #20241F;
-    --tooltip-bg: #0E1210;
-    --cat-reszveny: #7FA3CC;
-    --cat-kotveny: #93B6A9;
-    --cat-kripto: #E0B564;
-    --cat-keszpenz: #ADA89C;
+    --paper: #171C19; --ink: #ECE8DE; --ink-muted: #A9A599; --ink-faint: #7D7A6E;
+    --accent: #4FB89B; --success: #5CB88F; --success-bg: #1E2B23;
+    --danger: #E08B6C; --danger-bg: #332119; --warn: #D9A94A; --warn-bg: #332B18;
+    --line: #3A3A34; --line-soft: #262622; --input-bg: #20241F; --tooltip-bg: #0E1210;
+    --cat-reszveny: #7FA3CC; --cat-kotveny: #93B6A9; --cat-kripto: #E0B564; --cat-keszpenz: #ADA89C;
   }
   * { box-sizing: border-box; }
   html { -webkit-font-smoothing: antialiased; }
   body {
-    font-family: 'Inter', -apple-system, sans-serif;
-    color: var(--ink);
-    background: var(--paper);
-    margin: 0;
-    padding: 56px 24px 100px;
-    transition: background 0.3s ease, color 0.3s ease;
+    font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); background: var(--paper);
+    margin: 0; padding: 56px 24px 100px; transition: background 0.3s ease, color 0.3s ease;
   }
-  .page { max-width: 800px; margin: 0 auto; }
+  .page { max-width: 820px; margin: 0 auto; }
   .num { font-variant-numeric: tabular-nums; }
-
-  .header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 40px; }
-  h1 {
-    font-family: 'Fraunces', serif;
-    font-weight: 500;
-    font-size: 34px;
-    letter-spacing: -0.01em;
-    margin: 0 0 6px;
-  }
+  .header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  h1 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 34px; letter-spacing: -0.01em; margin: 0 0 6px; }
   .lede { font-size: 14px; color: var(--ink-muted); margin: 0; max-width: 62ch; }
-
-  /* Belépő animáció */
-  .reveal { opacity: 0; transform: translateY(10px); transition: opacity 0.55s ease, transform 0.55s ease; }
-  .reveal.is-visible { opacity: 1; transform: translateY(0); }
-
+  .header-controls { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .control-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+  .reveal { opacity: 0; transition: opacity 0.55s ease; }
+  .reveal.is-visible { opacity: 1; }
   section { margin-bottom: 44px; }
   .section-label {
-    font-size: 13px; color: var(--ink-muted); margin: 0 0 14px;
-    border-bottom: 1px solid var(--line); padding-bottom: 8px;
-    display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+    font-size: 13px; color: var(--ink-muted); margin: 0 0 14px; border-bottom: 1px solid var(--line);
+    padding-bottom: 8px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap;
   }
-
-  .form-grid {
-    display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr auto;
-    gap: 14px; align-items: end;
-  }
+  .form-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr auto; gap: 14px; align-items: end; }
   label { display: block; font-size: 12px; color: var(--ink-muted); margin-bottom: 5px; }
   input, select {
-    width: 100%; font-family: 'Inter', sans-serif; font-size: 14px;
-    padding: 9px 10px; border: 1px solid var(--line); border-radius: 3px;
-    background: var(--input-bg); color: var(--ink);
+    width: 100%; font-family: 'Inter', sans-serif; font-size: 14px; padding: 9px 10px;
+    border: 1px solid var(--line); border-radius: 3px; background: var(--input-bg); color: var(--ink);
   }
-  input:focus-visible, select:focus-visible, button:focus-visible {
-    outline: 2px solid var(--accent); outline-offset: 1px;
-  }
+  input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   button {
-    font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
-    padding: 9px 16px; background: var(--ink); color: var(--paper);
-    border: none; border-radius: 3px; cursor: pointer; white-space: nowrap;
+    font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; padding: 9px 16px;
+    background: var(--ink); color: var(--paper); border: none; border-radius: 3px; cursor: pointer; white-space: nowrap;
   }
   button:hover { background: var(--accent); color: #fff; }
-  button.ghost {
-    background: transparent; color: var(--ink); border: 1px solid var(--line);
-    padding: 7px 12px; font-size: 13px;
-  }
+  button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); padding: 7px 12px; font-size: 13px; }
   button.ghost:hover { background: var(--line-soft); color: var(--ink); }
+  button:disabled { opacity: 0.5; cursor: default; }
   #f-error { font-size: 13px; color: var(--danger); margin: 10px 0 0; }
-
-  .stat-row { display: flex; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-  .stat { flex: 1; padding: 18px 20px 18px 0; }
+  .stat-row { display: flex; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  .stat { flex: 1; padding: 18px 20px 18px 0; min-width: 140px; }
   .stat + .stat { border-left: 1px solid var(--line-soft); padding-left: 20px; }
   .stat p:first-child { font-size: 12px; color: var(--ink-muted); margin: 0 0 6px; }
   .stat p:last-child { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 500; margin: 0; }
-  .sim-tag {
-    font-size: 11px; color: var(--warn); background: var(--warn-bg);
-    border-radius: 3px; padding: 1px 6px; margin-left: 8px; font-family: 'Inter', sans-serif; vertical-align: middle;
-  }
-
+  .sim-tag { font-size: 11px; color: var(--warn); background: var(--warn-bg); border-radius: 3px; padding: 1px 6px; margin-left: 8px; font-family: 'Inter', sans-serif; vertical-align: middle; }
   .best-worst { display: flex; gap: 32px; margin-top: 16px; font-size: 13px; flex-wrap: wrap; }
   .best-worst span.label { color: var(--ink-muted); }
-
-  /* Portfólió-egészség */
   .health-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
   .health-ring { width: 84px; height: 84px; flex-shrink: 0; }
-  .health-ring text { font-family: 'Fraunces', serif; }
   .health-text { flex: 1; min-width: 220px; }
   .health-text p { margin: 0 0 6px; font-size: 14px; line-height: 1.5; }
   .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-  .badge-chip {
-    font-size: 12px; padding: 4px 11px; border-radius: 20px;
-    background: var(--line-soft); color: var(--ink-muted); display: inline-block;
-    animation: pop 0.4s ease both;
-  }
+  .badge-chip { font-size: 12px; padding: 4px 11px; border-radius: 20px; background: var(--line-soft); color: var(--ink-muted); display: inline-block; animation: pop 0.4s ease both; }
   @keyframes pop { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
-
   .donut-row { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
   .donut-col p { font-size: 13px; color: var(--ink-muted); text-align: center; margin: 0 0 8px; }
   .chart-holder { position: relative; height: 160px; }
   .legend { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 18px; font-size: 12px; color: var(--ink-muted); }
   .legend span { display: inline-flex; align-items: center; gap: 6px; }
   .swatch { width: 8px; height: 8px; border-radius: 1px; display: inline-block; }
-
-  /* Risk section */
   .risk-summary { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
   .risk-gauge-track { flex: 1; height: 8px; background: var(--line-soft); border-radius: 4px; overflow: hidden; }
   .risk-gauge-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease, background 0.3s ease; }
-  .risk-badge {
-    display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 20px;
-    font-weight: 500; white-space: nowrap;
-  }
+  .risk-badge { display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 20px; font-weight: 500; white-space: nowrap; }
   .risk-low { background: var(--success-bg); color: var(--success); }
   .risk-medium { background: var(--warn-bg); color: var(--warn); }
   .risk-high { background: var(--danger-bg); color: var(--danger); }
-  .risk-warning {
-    font-size: 13px; background: var(--danger-bg); color: var(--danger);
-    padding: 10px 14px; border-radius: 4px; margin-top: 4px;
-  }
-
-  /* Simulator */
+  .risk-warning { font-size: 13px; background: var(--danger-bg); color: var(--danger); padding: 10px 14px; border-radius: 4px; margin-top: 4px; }
   .sim-row { display: flex; align-items: center; gap: 16px; }
   .sim-row input[type="range"] { flex: 1; accent-color: var(--accent); }
   .sim-value { font-family: 'Fraunces', serif; font-size: 20px; min-width: 62px; text-align: right; }
   .sim-desc { font-size: 12px; color: var(--ink-muted); margin-top: 10px; }
-
-  /* Piaci referencia (S&P 500) */
   .sp500-holder { position: relative; height: 180px; }
   .sp500-caption { font-size: 12px; color: var(--ink-faint); margin-top: 10px; }
   .api-key-row { display: flex; gap: 8px; margin-bottom: 14px; }
   .api-key-row input { flex: 1; }
-
-  /* Historikus nyomkövetés */
   .history-holder { position: relative; height: 160px; }
   .history-empty { font-size: 13px; color: var(--ink-faint); padding: 20px 0; text-align: center; }
-
-  /* Fájlműveletek (mentés/betöltés) */
-  .file-ops { display: flex; gap: 8px; }
-
-  /* Table toolbar */
+  .file-ops, .action-ops { display: flex; gap: 8px; flex-wrap: wrap; }
   .table-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 4px; flex-wrap: wrap; }
   .table-toolbar select { width: auto; padding: 6px 8px; font-size: 13px; }
-
   table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th {
-    text-align: left; font-weight: 500; font-size: 12px; color: var(--ink-muted);
-    padding: 0 4px 10px; border-bottom: 1px solid var(--line);
-  }
-  th button.sort-btn {
-    background: none; border: none; padding: 0; color: var(--ink-muted); font-size: 12px;
-    font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 3px;
-  }
+  th { text-align: left; font-weight: 500; font-size: 12px; color: var(--ink-muted); padding: 0 4px 10px; border-bottom: 1px solid var(--line); }
+  th button.sort-btn { background: none; border: none; padding: 0; color: var(--ink-muted); font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 3px; }
   th button.sort-btn:hover { color: var(--ink); }
   th button.sort-btn .arrow { font-size: 10px; opacity: 0.5; }
-  th button.sort-btn[aria-sort="ascending"] .arrow,
-  th button.sort-btn[aria-sort="descending"] .arrow { opacity: 1; color: var(--accent); }
+  th button.sort-btn[aria-sort="ascending"] .arrow, th button.sort-btn[aria-sort="descending"] .arrow { opacity: 1; color: var(--accent); }
   td { padding: 11px 4px; border-bottom: 1px solid var(--line-soft); }
   tr:last-child td { border-bottom: 1px solid var(--line); }
-  .del {
-    border: none; background: transparent; color: var(--ink-faint);
-    cursor: pointer; font-size: 15px; padding: 2px 6px; border-radius: 3px;
-  }
+  .del { border: none; background: transparent; color: var(--ink-faint); cursor: pointer; font-size: 15px; padding: 2px 6px; border-radius: 3px; }
   .del:hover { color: var(--danger); background: var(--line-soft); }
   #empty-state { font-size: 14px; color: var(--ink-faint); text-align: center; padding: 36px 0; }
-
+  .ai-box { background: var(--line-soft); border-radius: 4px; padding: 14px 16px; margin-top: 14px; font-size: 13px; display: none; }
+  .ai-box.visible { display: block; }
+  .ai-box a { color: var(--accent); }
   footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 12px; color: var(--ink-faint); }
-
   @media (max-width: 640px) {
     .form-grid { grid-template-columns: 1fr 1fr; }
     .stat-row { flex-direction: column; }
     .stat + .stat { border-left: none; border-top: 1px solid var(--line-soft); padding-left: 0; padding-top: 14px; }
     .donut-row { grid-template-columns: 1fr; }
     table { font-size: 13px; }
+    .header-controls { align-items: flex-start; }
+    .control-row { justify-content: flex-start; }
   }
   @media (prefers-reduced-motion: reduce) {
     .reveal { opacity: 1 !important; transform: none !important; }
@@ -235,72 +144,80 @@
 
   <div class="header-row reveal">
     <div>
-      <h1>Befektetési napló</h1>
-      <p class="lede">Saját teszt-projekt: portfólió nyomon követése típusonként, kockázati besorolással, piaci szimulációval és élő piaci referenciával.</p>
+      <h1 data-i18n="appTitle">Befektetési napló</h1>
+      <p class="lede" data-i18n="appLede">Saját teszt-projekt: portfólió nyomon követése típusonként, kockázati besorolással, piaci szimulációval és élő piaci referenciával.</p>
     </div>
-    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
-      <button class="ghost" id="theme-toggle">🌙 Sötét mód</button>
-      <div class="file-ops">
-        <button class="ghost" id="save-json">Mentés fájlba</button>
-        <button class="ghost" id="load-json">Betöltés fájlból</button>
+    <div class="header-controls">
+      <div class="control-row">
+        <button class="ghost" id="lang-toggle">EN</button>
+        <button class="ghost" id="theme-toggle">🌙 Sötét mód</button>
+      </div>
+      <div class="control-row">
+        <select id="currency-select" aria-label="Currency">
+          <option value="HUF">HUF (Ft)</option>
+          <option value="EUR">EUR (€)</option>
+          <option value="USD">USD ($)</option>
+        </select>
+        <button class="ghost" id="save-json" data-i18n="saveJson">Mentés fájlba</button>
+        <button class="ghost" id="load-json" data-i18n="loadJson">Betöltés fájlból</button>
         <input type="file" id="load-json-input" accept="application/json" style="display:none;" />
       </div>
     </div>
   </div>
 
   <section class="reveal">
-    <p class="section-label">Eszköz felvétele</p>
+    <p class="section-label" data-i18n="sectionAddAsset">Eszköz felvétele</p>
     <div class="form-grid">
       <div>
-        <label for="f-name">Eszköz neve</label>
-        <input type="text" id="f-name" placeholder="pl. OTP részvény" />
+        <label for="f-name" data-i18n="labelName">Eszköz neve</label>
+        <input type="text" id="f-name" data-i18n-placeholder="placeholderName" placeholder="pl. OTP részvény" />
       </div>
       <div>
-        <label for="f-type">Típus</label>
+        <label for="f-type" data-i18n="labelType">Típus</label>
         <select id="f-type">
-          <option value="reszveny">Részvény</option>
-          <option value="kotveny">Kötvény</option>
-          <option value="kripto">Kripto</option>
-          <option value="keszpenz">Készpénz</option>
+          <option value="reszveny" data-i18n="type_reszveny">Részvény</option>
+          <option value="kotveny" data-i18n="type_kotveny">Kötvény</option>
+          <option value="kripto" data-i18n="type_kripto">Kripto</option>
+          <option value="keszpenz" data-i18n="type_keszpenz">Készpénz</option>
         </select>
       </div>
       <div>
-        <label for="f-invested">Befektetett (Ft)</label>
+        <label for="f-invested" id="label-invested">Befektetett (Ft)</label>
         <input type="number" id="f-invested" placeholder="500 000" min="0" />
       </div>
       <div>
-        <label for="f-current">Jelenlegi érték (Ft)</label>
+        <label for="f-current" id="label-current">Jelenlegi érték (Ft)</label>
         <input type="number" id="f-current" placeholder="540 000" min="0" />
       </div>
-      <button id="f-add">Hozzáad</button>
+      <button id="f-add" data-i18n="btnAdd">Hozzáad</button>
     </div>
     <p id="f-error" style="display:none;"></p>
   </section>
 
   <section class="reveal">
-    <p class="section-label">Összesítés</p>
+    <p class="section-label" data-i18n="sectionSummary">Összesítés</p>
     <div class="stat-row">
       <div class="stat">
-        <p>Összes befektetett</p>
+        <p data-i18n="statInvested">Összes befektetett</p>
         <p class="num" id="s-invested">0 Ft</p>
       </div>
       <div class="stat">
-        <p>Jelenlegi érték <span class="sim-tag" id="sim-tag" style="display:none;">szimulált</span></p>
+        <p><span data-i18n="statCurrent">Jelenlegi érték</span> <span class="sim-tag" id="sim-tag" style="display:none;" data-i18n="simTag">szimulált</span></p>
         <p class="num" id="s-current">0 Ft</p>
       </div>
       <div class="stat">
-        <p>Összesített hozam</p>
+        <p data-i18n="statReturn">Összesített hozam</p>
         <p class="num" id="s-return">0%</p>
       </div>
     </div>
     <div class="best-worst" id="best-worst" style="display:none;">
-      <div><span class="label">Legjobb teljesítő —</span> <strong id="best-name"></strong></div>
-      <div><span class="label">Leggyengébb teljesítő —</span> <strong id="worst-name"></strong></div>
+      <div><span class="label" data-i18n="bestLabel">Legjobb teljesítő —</span> <strong id="best-name"></strong></div>
+      <div><span class="label" data-i18n="worstLabel">Leggyengébb teljesítő —</span> <strong id="worst-name"></strong></div>
     </div>
   </section>
 
   <section id="health-section" class="reveal" style="display:none;">
-    <p class="section-label">Portfólió-egészség</p>
+    <p class="section-label" data-i18n="sectionHealth">Portfólió-egészség</p>
     <div class="health-row">
       <div class="health-ring" id="health-ring"></div>
       <div class="health-text">
@@ -312,46 +229,38 @@
   </section>
 
   <section id="history-section" class="reveal" style="display:none;">
-    <p class="section-label">Historikus nyomkövetés (saját eszköz-előzmény)</p>
-    <div id="history-chart-wrap">
-      <div class="history-holder"><canvas id="chart-history"></canvas></div>
-    </div>
+    <p class="section-label" data-i18n="sectionHistory">Historikus nyomkövetés (saját eszköz-előzmény)</p>
+    <div id="history-chart-wrap"><div class="history-holder"><canvas id="chart-history"></canvas></div></div>
     <p class="history-empty" id="history-empty" style="display:none;"></p>
-    <p class="sp500-caption">Ez a görbe kizárólag ebben a böngészőben, ezen a gépen rögzített napi állapotokon alapul — minden alkalommal frissül, amikor megnyitod és van felvett eszközöd. Idővel valódi, saját historikus adatsorrá épül.</p>
+    <p class="sp500-caption" data-i18n="historyCaption">Ez a görbe kizárólag ebben a böngészőben, ezen a gépen rögzített napi állapotokon alapul — minden alkalommal frissül, amikor megnyitod és van felvett eszközöd. Idővel valódi, saját historikus adatsorrá épül.</p>
   </section>
 
   <section id="sim-section" class="reveal" style="display:none;">
-    <p class="section-label">„Mi lenne, ha” piaci szimulátor</p>
+    <p class="section-label" data-i18n="sectionSim">„Mi lenne, ha” piaci szimulátor</p>
     <div class="sim-row">
-      <input type="range" id="sim-slider" min="-20" max="20" value="0" step="1" aria-label="Feltételezett piaci elmozdulás százalékban" />
+      <input type="range" id="sim-slider" min="-20" max="20" value="0" step="1" aria-label="Simulated market move" />
       <span class="sim-value num" id="sim-value">0%</span>
-      <button class="ghost" id="sim-reset">Visszaállítás</button>
+      <button class="ghost" id="sim-reset" data-i18n="btnReset">Visszaállítás</button>
     </div>
-    <p class="sim-desc">A csúszka egy feltételezett piaci elmozdulást szimulál, típusonként eltérő érzékenységgel (a kripto jobban mozog, mint a kötvény vagy a készpénz). A befektetett összeg nem változik, csak a jelenlegi érték és az abból számolt mutatók.</p>
+    <p class="sim-desc" data-i18n="simDesc">A csúszka egy feltételezett piaci elmozdulást szimulál, típusonként eltérő érzékenységgel (a kripto jobban mozog, mint a kötvény vagy a készpénz). A befektetett összeg nem változik, csak a jelenlegi érték és az abból számolt mutatók.</p>
   </section>
 
   <section id="alloc-section" class="reveal" style="display:none;">
-    <p class="section-label">Megoszlás típus szerint</p>
+    <p class="section-label" data-i18n="sectionAlloc">Megoszlás típus szerint</p>
     <div class="donut-row">
-      <div class="donut-col">
-        <p>Befektetett</p>
-        <div class="chart-holder"><canvas id="chart-inv"></canvas></div>
-      </div>
-      <div class="donut-col">
-        <p>Jelenlegi érték</p>
-        <div class="chart-holder"><canvas id="chart-cur"></canvas></div>
-      </div>
+      <div class="donut-col"><p data-i18n="allocInvested">Befektetett</p><div class="chart-holder"><canvas id="chart-inv"></canvas></div></div>
+      <div class="donut-col"><p data-i18n="allocCurrent">Jelenlegi érték</p><div class="chart-holder"><canvas id="chart-cur"></canvas></div></div>
     </div>
     <div class="legend">
-      <span><span class="swatch" style="background:var(--cat-reszveny);"></span>Részvény</span>
-      <span><span class="swatch" style="background:var(--cat-kotveny);"></span>Kötvény</span>
-      <span><span class="swatch" style="background:var(--cat-kripto);"></span>Kripto</span>
-      <span><span class="swatch" style="background:var(--cat-keszpenz);"></span>Készpénz</span>
+      <span><span class="swatch" style="background:var(--cat-reszveny);"></span><span data-i18n="type_reszveny">Részvény</span></span>
+      <span><span class="swatch" style="background:var(--cat-kotveny);"></span><span data-i18n="type_kotveny">Kötvény</span></span>
+      <span><span class="swatch" style="background:var(--cat-kripto);"></span><span data-i18n="type_kripto">Kripto</span></span>
+      <span><span class="swatch" style="background:var(--cat-keszpenz);"></span><span data-i18n="type_keszpenz">Készpénz</span></span>
     </div>
   </section>
 
   <section id="risk-section" class="reveal" style="display:none;">
-    <p class="section-label">Kockázati profil</p>
+    <p class="section-label" data-i18n="sectionRisk">Kockázati profil</p>
     <div class="risk-summary">
       <div class="risk-gauge-track"><div class="risk-gauge-fill" id="risk-gauge"></div></div>
       <span class="risk-badge" id="risk-badge">–</span>
@@ -361,60 +270,223 @@
 
   <section class="reveal">
     <p class="section-label">
-      Piaci referencia — S&amp;P 500 (VOO ETF)
-      <button class="ghost" id="sp500-retry" style="font-size:12px; padding:4px 10px;">Frissítés</button>
+      <span data-i18n="sectionMarket">Piaci referencia — S&amp;P 500 (VOO ETF)</span>
+      <button class="ghost" id="sp500-retry" style="font-size:12px; padding:4px 10px;" data-i18n="btnRefresh">Frissítés</button>
     </p>
     <div class="api-key-row" id="api-key-row" style="display:none;">
-      <input type="text" id="api-key-input" placeholder="Alpha Vantage API-kulcs (ingyenes: alphavantage.co/support/#api-key)" />
-      <button id="api-key-save">Mentés</button>
+      <input type="text" id="api-key-input" data-i18n-placeholder="apiKeyPlaceholder" placeholder="Saját Alpha Vantage API-kulcs (opcionális, ha a beépített elfogyott)" />
+      <button id="api-key-save" data-i18n="btnSaveKey">Mentés</button>
     </div>
     <div class="sp500-holder"><canvas id="chart-sp500"></canvas></div>
     <div class="legend" id="sp500-legend" style="display:none;">
-      <span><span class="swatch" style="background:var(--accent); border-radius:50%;"></span>VOO (S&amp;P 500) — relatív elmozdulás az időszak alatt</span>
-      <span><span class="swatch" style="background:var(--ink-muted); border-radius:50%;"></span>Saját portfólió — jelenlegi összhozam (nem idősor)</span>
+      <span><span class="swatch" style="background:var(--accent); border-radius:50%;"></span><span data-i18n="legendVoo">VOO (S&P 500) — relatív elmozdulás az időszak alatt</span></span>
+      <span><span class="swatch" style="background:var(--ink-muted); border-radius:50%;"></span><span data-i18n="legendPortfolio">Saját portfólió — jelenlegi összhozam (nem idősor)</span></span>
     </div>
-    <p class="sp500-caption" id="sp500-caption">Élő adat betöltése…</p>
+    <p class="sp500-caption" id="sp500-caption" data-i18n="captionLoadingMarket">Élő adat betöltése…</p>
   </section>
 
   <section class="reveal">
     <div class="table-toolbar">
-      <p class="section-label" style="border-bottom:none; padding-bottom:0; margin-bottom:0;">Tételek</p>
-      <div style="display:flex; gap:10px; align-items:center;">
-        <select id="filter-type" aria-label="Szűrés típus szerint">
-          <option value="all">Minden típus</option>
-          <option value="reszveny">Részvény</option>
-          <option value="kotveny">Kötvény</option>
-          <option value="kripto">Kripto</option>
-          <option value="keszpenz">Készpénz</option>
+      <p class="section-label" style="border-bottom:none; padding-bottom:0; margin-bottom:0;" data-i18n="sectionTable">Tételek</p>
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <select id="filter-type" aria-label="Filter by type">
+          <option value="all" data-i18n="filterAll">Minden típus</option>
+          <option value="reszveny" data-i18n="type_reszveny">Részvény</option>
+          <option value="kotveny" data-i18n="type_kotveny">Kötvény</option>
+          <option value="kripto" data-i18n="type_kripto">Kripto</option>
+          <option value="keszpenz" data-i18n="type_keszpenz">Készpénz</option>
         </select>
-        <button class="ghost" id="export-xlsx">Excel exportálása</button>
+        <div class="action-ops">
+          <button class="ghost" id="analysis-btn" data-i18n="btnAnalysis">Részletes elemzés</button>
+          <button class="ghost" id="export-pdf" data-i18n="btnExportPdf">PDF kimutatás</button>
+          <button class="ghost" id="export-xlsx" data-i18n="btnExportExcel">Excel exportálása</button>
+        </div>
       </div>
     </div>
+    <div class="ai-box" id="ai-box"></div>
     <table>
       <thead>
         <tr>
-          <th><button class="sort-btn" data-key="name">Eszköz <span class="arrow">▾</span></button></th>
-          <th><button class="sort-btn" data-key="type">Típus <span class="arrow">▾</span></button></th>
-          <th style="text-align:right;"><button class="sort-btn" data-key="invested">Befektetett <span class="arrow">▾</span></button></th>
-          <th style="text-align:right;"><button class="sort-btn" data-key="current">Jelenlegi <span class="arrow">▾</span></button></th>
-          <th style="text-align:right;"><button class="sort-btn" data-key="return">Hozam <span class="arrow">▾</span></button></th>
-          <th>Kockázat</th>
+          <th><button class="sort-btn" data-key="name"><span data-i18n="colAsset">Eszköz</span> <span class="arrow">▾</span></button></th>
+          <th><button class="sort-btn" data-key="type"><span data-i18n="colType">Típus</span> <span class="arrow">▾</span></button></th>
+          <th style="text-align:right;"><button class="sort-btn" data-key="invested"><span data-i18n="colInvested">Befektetett</span> <span class="arrow">▾</span></button></th>
+          <th style="text-align:right;"><button class="sort-btn" data-key="current"><span data-i18n="colCurrent">Jelenlegi</span> <span class="arrow">▾</span></button></th>
+          <th style="text-align:right;"><button class="sort-btn" data-key="return"><span data-i18n="colReturn">Hozam</span> <span class="arrow">▾</span></button></th>
+          <th data-i18n="colRisk">Kockázat</th>
           <th></th>
         </tr>
       </thead>
       <tbody id="holdings-body"></tbody>
     </table>
-    <p id="empty-state">Még nincs felvett eszköz. Adj hozzá egyet fent.</p>
+    <p id="empty-state" data-i18n="emptyStateNone">Még nincs felvett eszköz. Adj hozzá egyet fent.</p>
   </section>
 
-  <footer class="reveal">Tóth György Milán — saját projekt: AI ügynökkel (Claude) épített, önállóan tesztelt és iteratívan finomított eszköz, 2026.</footer>
+  <footer>Tóth György Milán — <span data-i18n="footerRest">saját projekt: AI ügynökkel (Claude) épített, önállóan tesztelt és iteratívan finomított eszköz, 2026.</span></footer>
 
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-const typeLabels = { reszveny: 'Részvény', kotveny: 'Kötvény', kripto: 'Kripto', keszpenz: 'Készpénz' };
+/* ================= FORDITASOK / TRANSLATIONS ================= */
+const translations = {
+  hu: {
+    appTitle: "Befektetési napló",
+    appLede: "Saját teszt-projekt: portfólió nyomon követése típusonként, kockázati besorolással, piaci szimulációval és élő piaci referenciával.",
+    saveJson: "Mentés fájlba", loadJson: "Betöltés fájlból",
+    sectionAddAsset: "Eszköz felvétele", labelName: "Eszköz neve", placeholderName: "pl. OTP részvény",
+    labelType: "Típus", labelInvested: "Befektetett", labelCurrent: "Jelenlegi érték", btnAdd: "Hozzáad",
+    type_reszveny: "Részvény", type_kotveny: "Kötvény", type_kripto: "Kripto", type_keszpenz: "Készpénz",
+    errFillFields: "Add meg az eszköz nevét és érvényes, nem negatív összegeket.",
+    sectionSummary: "Összesítés", statInvested: "Összes befektetett", statCurrent: "Jelenlegi érték", statReturn: "Összesített hozam", simTag: "szimulált",
+    bestLabel: "Legjobb teljesítő —", worstLabel: "Leggyengébb teljesítő —",
+    sectionHealth: "Portfólió-egészség",
+    healthTier_excellent: "Kiváló állapot", healthTier_good: "Jó állapot", healthTier_balanced: "Kiegyensúlyozott", healthTier_attention: "Figyelmet igényel",
+    div_full: "jól diverzifikált", div_partial: "részben diverzifikált", div_concentrated: "koncentrált, kevéssé diverzifikált",
+    badge_diversified: "Diverzifikált portfólió", badge_profit: "Van nyereséges eszköz", badge_balanced: "Kiegyensúlyozott kockázat", badge_positive: "Pozitív összhozam",
+    sectionHistory: "Historikus nyomkövetés (saját eszköz-előzmény)",
+    historyEmptyNone: "Még nincs rögzített mérés. Nyisd meg az eszközt legalább két különböző napon, hogy görbe épüljön.",
+    historyEmptyOne: (d) => "Eddig 1 nap van rögzítve (" + d + "). Nyisd meg máskor is, hogy összehasonlítható historikus görbe legyen.",
+    historyCaption: "Ez a görbe kizárólag ebben a böngészőben, ezen a gépen rögzített napi állapotokon alapul — minden alkalommal frissül, amikor megnyitod és van felvett eszközöd. Idővel valódi, saját historikus adatsorrá épül.",
+    sectionSim: "„Mi lenne, ha” piaci szimulátor",
+    simDesc: "A csúszka egy feltételezett piaci elmozdulást szimulál, típusonként eltérő érzékenységgel (a kripto jobban mozog, mint a kötvény vagy a készpénz). A befektetett összeg nem változik, csak a jelenlegi érték és az abból számolt mutatók.",
+    btnReset: "Visszaállítás",
+    sectionAlloc: "Megoszlás típus szerint", allocInvested: "Befektetett", allocCurrent: "Jelenlegi érték",
+    sectionRisk: "Kockázati profil",
+    riskLabel_low: "Alacsony kockázat", riskLabel_medium: "Közepes kockázat", riskLabel_high: "Magas kockázat",
+    riskName_low: "alacsony", riskName_medium: "közepes", riskName_high: "magas",
+    riskWarning: (pct) => "Figyelem: a portfólió " + pct + "%-a magas kockázatú (kripto) eszközben koncentrálódik.",
+    sectionMarket: "Piaci referencia — S&P 500 (VOO ETF)", btnRefresh: "Frissítés",
+    apiKeyPlaceholder: "Saját Alpha Vantage API-kulcs (opcionális, ha a beépített elfogyott)", btnSaveKey: "Mentés",
+    legendVoo: "VOO (S&P 500) — relatív elmozdulás az időszak alatt", legendPortfolio: "Saját portfólió — jelenlegi összhozam (nem idősor)",
+    captionLoadingMarket: "Élő adat betöltése…",
+    captionMarketSuccess: (n) => "Forrás: Alpha Vantage — VOO (Vanguard S&P 500 ETF) élő napi záróárai, az utolsó " + n + " kereskedési nap. Az index helyett a rá épülő, tőzsdén kereskedett ETF-et mutatja, ami gyakorlatilag 1:1 leköveti azt. A szaggatott vonal a portfóliód jelenlegi összhozama — nem valós idősor, mert az eszköz eddig nem mentette a korábbi állapotokat.",
+    captionMarketFail: "Az élő piaci adat jelenleg nem érhető el (valószínűleg elfogyott a beépített kulcs napi lekérési limitje). Megadhatod a saját, ingyenes Alpha Vantage kulcsodat fent, vagy próbáld meg később a \"Frissítés\" gombbal.",
+    sectionTable: "Tételek", filterAll: "Minden típus",
+    btnAnalysis: "Részletes elemzés", btnExportPdf: "PDF kimutatás", btnExportExcel: "Excel exportálása",
+    colAsset: "Eszköz", colType: "Típus", colInvested: "Befektetett", colCurrent: "Jelenlegi", colReturn: "Hozam", colRisk: "Kockázat",
+    emptyStateNone: "Még nincs felvett eszköz. Adj hozzá egyet fent.", emptyStateFiltered: "Nincs a szűrésnek megfelelő tétel.",
+    deleteAria: "Törlés", footerRest: "saját projekt: AI ügynökkel (Claude) épített, önállóan tesztelt és iteratívan finomított eszköz, 2026.",
+    excelExportFail: "Az Excel export jelenleg nem sikerült. Ellenőrizd az internetkapcsolatot, majd próbáld újra.",
+    pdfExportFail: "A PDF export jelenleg nem sikerült. Ellenőrizd az internetkapcsolatot, majd próbáld újra.",
+    importInvalidFile: "A fájl nem eszközlistát tartalmaz.", importNoValid: "Nem található érvényes eszköz a fájlban.",
+    importFail: (msg) => "A fájl betöltése nem sikerült: érvénytelen vagy sérült JSON. (" + msg + ")",
+    importReadFail: "A fájl beolvasása sikertelen.",
+    analysisNoHoldings: "Adj hozzá legalább egy eszközt, hogy elemzést tudjunk készíteni.",
+    analysisNote: "Ez az elemzés helyben, a böngésződben készül a portfóliód adatai alapján — nem élő AI-modell generálja, hanem a projektben már meglévő kockázati és diverzifikációs logika bővebb, szöveges kifejtése.",
+    analysisDiversificationFull: (n) => "A portfóliód " + n + " különböző eszköztípust tartalmaz, ami jó diverzifikációt jelent — ez csökkenti annak esélyét, hogy egyetlen piaci esemény aránytalanul nagy hatással legyen az egészre.",
+    analysisDiversificationPartial: (n) => "A portfóliód " + n + " eszköztípust tartalmaz. Ez részleges diverzifikáció — érdemes megfontolni egy további típus (pl. kötvény vagy készpénz) bevonását a kockázat további csökkentéséhez.",
+    analysisDiversificationLow: "A portfóliód jelenleg egyetlen eszköztípusra koncentrálódik. Ez jelentősen megnöveli a kockázatot, mert egyetlen piaci mozgás az egész portfóliót érintheti.",
+    analysisConcentration: (name, pct) => name + " a portfólió " + pct + "%-át teszi ki — ez elég magas arány ahhoz, hogy külön figyelmet érdemeljen.",
+    analysisRiskLow: "A súlyozott kockázati szint alacsony — ez stabilitást ad, cserébe jellemzően mérsékeltebb hosszú távú hozam-potenciállal jár.",
+    analysisRiskMedium: "A súlyozott kockázati szint közepes — ez általában elfogadható egyensúlyt jelent a stabilitás és a növekedési potenciál között.",
+    analysisRiskHigh: "A súlyozott kockázati szint magas — ez nagyobb hozam-potenciált hordoz, de nagyobb ingadozással és veszteség-kockázattal is jár.",
+    analysisPerformance: (best, bestPct, worst, worstPct) => "A legjobban teljesítő eszköz a " + best + " (" + bestPct + "), a leggyengébb a " + worst + " (" + worstPct + "). A kettő közötti szórás megmutatja, mennyire egyenetlen a portfólió teljesítménye eszközönként.",
+    analysisReturnPositive: (pct) => "A portfólió összesített hozama jelenleg pozitív (" + pct + "), ami azt jelzi, hogy a jelenlegi állapotban a befektetés összességében nyereséges.",
+    analysisReturnNegative: (pct) => "A portfólió összesített hozama jelenleg negatív (" + pct + "). Ez önmagában nem feltétlenül baj — érdemes hosszabb távon, a befektetési célokhoz mérten értékelni.",
+    pdfTitle: "Befektetési portfólió — kimutatás", pdfGenerated: "Generálva",
+    pdfSummary: "Összesítés", pdfInvestedTotal: "Összes befektetett", pdfCurrentTotal: "Jelenlegi érték", pdfReturnTotal: "Összesített hozam",
+    pdfRisk: "Kockázati szint", pdfHoldings: "Tételek",
+    fxLoading: "Árfolyam betöltése…", fxFail: "Az élő árfolyam nem elérhető, HUF-ban jelenik meg.",
+  },
+  en: {
+    appTitle: "Investment Journal",
+    appLede: "Personal test project: tracking a portfolio by asset type, with risk classification, market simulation, and a live market reference.",
+    saveJson: "Save to file", loadJson: "Load from file",
+    sectionAddAsset: "Add asset", labelName: "Asset name", placeholderName: "e.g. Apple stock",
+    labelType: "Type", labelInvested: "Invested", labelCurrent: "Current value", btnAdd: "Add",
+    type_reszveny: "Stock", type_kotveny: "Bond", type_kripto: "Crypto", type_keszpenz: "Cash",
+    errFillFields: "Enter the asset name and valid, non-negative amounts.",
+    sectionSummary: "Summary", statInvested: "Total invested", statCurrent: "Current value", statReturn: "Total return", simTag: "simulated",
+    bestLabel: "Best performer —", worstLabel: "Worst performer —",
+    sectionHealth: "Portfolio health",
+    healthTier_excellent: "Excellent", healthTier_good: "Good", healthTier_balanced: "Balanced", healthTier_attention: "Needs attention",
+    div_full: "well diversified", div_partial: "partially diversified", div_concentrated: "concentrated, poorly diversified",
+    badge_diversified: "Diversified portfolio", badge_profit: "Has a profitable asset", badge_balanced: "Balanced risk", badge_positive: "Positive total return",
+    sectionHistory: "Historical tracking (your own device history)",
+    historyEmptyNone: "No measurement recorded yet. Open this tool on at least two different days to build a curve.",
+    historyEmptyOne: (d) => "1 day recorded so far (" + d + "). Open it again another day for a comparable history curve.",
+    historyCaption: "This curve is based solely on daily snapshots recorded in this browser, on this device — it updates every time you open the tool with at least one asset. Over time it becomes a genuine, personal historical series.",
+    sectionSim: "\"What if\" market simulator",
+    simDesc: "The slider simulates a hypothetical market move, with each asset type reacting at a different sensitivity (crypto moves more than bonds or cash). The invested amount doesn't change — only the current value and the metrics derived from it.",
+    btnReset: "Reset",
+    sectionAlloc: "Allocation by type", allocInvested: "Invested", allocCurrent: "Current value",
+    sectionRisk: "Risk profile",
+    riskLabel_low: "Low risk", riskLabel_medium: "Medium risk", riskLabel_high: "High risk",
+    riskName_low: "low", riskName_medium: "medium", riskName_high: "high",
+    riskWarning: (pct) => "Warning: " + pct + "% of the portfolio is concentrated in high-risk (crypto) assets.",
+    sectionMarket: "Market reference — S&P 500 (VOO ETF)", btnRefresh: "Refresh",
+    apiKeyPlaceholder: "Your own Alpha Vantage API key (optional, if the built-in one ran out)", btnSaveKey: "Save",
+    legendVoo: "VOO (S&P 500) — relative move over the period", legendPortfolio: "Your portfolio — current total return (not a time series)",
+    captionLoadingMarket: "Loading live data…",
+    captionMarketSuccess: (n) => "Source: Alpha Vantage — VOO (Vanguard S&P 500 ETF) live daily closing prices, the last " + n + " trading days. Shows the exchange-traded ETF tracking the index (practically 1:1) instead of the raw index. The dashed line is your portfolio's current total return — not a real time series, since this tool didn't record past states before now.",
+    captionMarketFail: "Live market data isn't available right now (the built-in key's daily limit was likely reached). You can enter your own free Alpha Vantage key above, or try again later with \"Refresh\".",
+    sectionTable: "Holdings", filterAll: "All types",
+    btnAnalysis: "Detailed analysis", btnExportPdf: "PDF statement", btnExportExcel: "Export to Excel",
+    colAsset: "Asset", colType: "Type", colInvested: "Invested", colCurrent: "Current", colReturn: "Return", colRisk: "Risk",
+    emptyStateNone: "No assets yet. Add one above.", emptyStateFiltered: "No items match the filter.",
+    deleteAria: "Delete", footerRest: "personal project: built with an AI agent (Claude), independently tested and iteratively refined, 2026.",
+    excelExportFail: "The Excel export failed. Check your internet connection and try again.",
+    pdfExportFail: "The PDF export failed. Check your internet connection and try again.",
+    importInvalidFile: "The file doesn't contain a list of assets.", importNoValid: "No valid asset found in the file.",
+    importFail: (msg) => "Failed to load file: invalid or corrupted JSON. (" + msg + ")",
+    importReadFail: "Failed to read the file.",
+    analysisNoHoldings: "Add at least one asset so an analysis can be generated.",
+    analysisNote: "This analysis is generated locally, in your browser, from your portfolio's data — it isn't produced by a live AI model, but is a more detailed, written version of the risk and diversification logic already built into this project.",
+    analysisDiversificationFull: (n) => "Your portfolio includes " + n + " different asset types, which is good diversification — it reduces the chance that a single market event will disproportionately affect the whole portfolio.",
+    analysisDiversificationPartial: (n) => "Your portfolio includes " + n + " asset types. This is partial diversification — consider adding another type (e.g. bonds or cash) to further reduce risk.",
+    analysisDiversificationLow: "Your portfolio is currently concentrated in a single asset type. This significantly increases risk, since a single market move can affect the entire portfolio.",
+    analysisConcentration: (name, pct) => name + " makes up " + pct + "% of the portfolio — high enough to deserve particular attention.",
+    analysisRiskLow: "The weighted risk level is low — this provides stability, typically at the cost of more modest long-term return potential.",
+    analysisRiskMedium: "The weighted risk level is medium — generally a reasonable balance between stability and growth potential.",
+    analysisRiskHigh: "The weighted risk level is high — this carries greater return potential, but also greater volatility and risk of loss.",
+    analysisPerformance: (best, bestPct, worst, worstPct) => "The best performer is " + best + " (" + bestPct + "), the worst is " + worst + " (" + worstPct + "). The gap between them shows how uneven performance is across the portfolio.",
+    analysisReturnPositive: (pct) => "The portfolio's total return is currently positive (" + pct + "), meaning the investment is net profitable at this point in time.",
+    analysisReturnNegative: (pct) => "The portfolio's total return is currently negative (" + pct + "). This isn't necessarily a problem on its own — it's worth evaluating over a longer horizon, relative to your investment goals.",
+    pdfTitle: "Investment Portfolio — Statement", pdfGenerated: "Generated",
+    pdfSummary: "Summary", pdfInvestedTotal: "Total invested", pdfCurrentTotal: "Current value", pdfReturnTotal: "Total return",
+    pdfRisk: "Risk level", pdfHoldings: "Holdings",
+    fxLoading: "Loading exchange rate…", fxFail: "Live exchange rate unavailable, showing HUF.",
+  }
+};
+let lang = (function () { try { return localStorage.getItem('lang') || 'hu'; } catch (e) { return 'hu'; } })();
+function t(key, ...args) {
+  const entry = translations[lang][key];
+  if (typeof entry === 'function') return entry(...args);
+  return entry !== undefined ? entry : key;
+}
+function applyStaticTranslations() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.getAttribute('data-i18n-placeholder')); });
+  document.getElementById('label-invested').textContent = t('labelInvested') + ' (' + currentCurrency + ')';
+  document.getElementById('label-current').textContent = t('labelCurrent') + ' (' + currentCurrency + ')';
+  document.getElementById('lang-toggle').textContent = lang === 'hu' ? 'EN' : 'HU';
+}
+
+/* ================= PENZNEM / CURRENCY ================= */
+let currentCurrency = (function () { try { return localStorage.getItem('currency') || 'HUF'; } catch (e) { return 'HUF'; } })();
+let fxRates = { HUF: 1, EUR: null, USD: null };
+const currencySymbol = { HUF: 'Ft', EUR: '€', USD: '$' };
+async function loadFxRates() {
+  try {
+    const res = await fetch('https://api.frankfurter.app/latest?from=HUF&to=EUR,USD');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    if (json.rates && json.rates.EUR && json.rates.USD) {
+      fxRates.EUR = json.rates.EUR;
+      fxRates.USD = json.rates.USD;
+    }
+  } catch (e) {
+    console.error('Az árfolyam betöltése sikertelen:', e);
+  }
+  render();
+}
+
+/* ================= ALAP ADATOK ================= */
+const typeKeys = ['reszveny', 'kotveny', 'kripto', 'keszpenz'];
+function typeLabel(type) { return t('type_' + type); }
 function currentTypeHex() {
   return {
     reszveny: getComputedStyle(document.documentElement).getPropertyValue('--cat-reszveny').trim(),
@@ -423,7 +495,6 @@ function currentTypeHex() {
     keszpenz: getComputedStyle(document.documentElement).getPropertyValue('--cat-keszpenz').trim(),
   };
 }
-// score: 1 (alacsony) .. 5 (magas); sensitivity: relatív érzékenység a szimulátor mozgására
 const riskInfo = {
   reszveny: { score: 3, sensitivity: 1.0 },
   kotveny: { score: 1.5, sensitivity: 0.3 },
@@ -437,15 +508,11 @@ function loadHoldingsFromStorage() {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(h => h && typeof h.name === 'string' && typeLabels[h.type] && typeof h.invested === 'number' && typeof h.current === 'number');
-  } catch (e) {
-    console.error('A korábbi adatok betöltése sikertelen:', e);
-    return [];
-  }
+    return parsed.filter(h => h && typeof h.name === 'string' && typeKeys.includes(h.type) && typeof h.invested === 'number' && typeof h.current === 'number');
+  } catch (e) { return []; }
 }
-
 let holdings = loadHoldingsFromStorage();
-let chartInv = null, chartCur = null, sp500Chart = null;
+let chartInv = null, chartCur = null, sp500Chart = null, historyChart = null;
 let sp500Data = null;
 let simPct = 0;
 let sortKey = null, sortDir = 1;
@@ -453,17 +520,29 @@ let filterType = 'all';
 
 const animState = { inv: 0, cur: 0, ret: 0 };
 const rafIds = {};
-const fmt = n => Math.round(n).toLocaleString('hu-HU') + ' Ft';
+function localeStr() { return lang === 'hu' ? 'hu-HU' : 'en-US'; }
+function toDisplay(hufValue) {
+  const rate = currentCurrency === 'HUF' ? 1 : (fxRates[currentCurrency] || null);
+  if (rate === null) return null;
+  return hufValue * rate;
+}
+function fmt(hufValue) {
+  const converted = toDisplay(hufValue);
+  if (converted === null) return '—';
+  const rounded = currentCurrency === 'HUF' ? Math.round(converted) : Math.round(converted * 100) / 100;
+  const numStr = rounded.toLocaleString(localeStr(), currentCurrency === 'HUF' ? {} : { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return currentCurrency === 'HUF' ? numStr + ' Ft' : currencySymbol[currentCurrency] + numStr;
+}
 const fmtPct = n => (n >= 0 ? '+' : '') + n.toFixed(1) + '%';
 const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
 function riskTier(score) {
-  if (score >= 4) return { label: 'Magas', cls: 'risk-high', color: cssVar('--danger') };
-  if (score >= 2.2) return { label: 'Közepes', cls: 'risk-medium', color: cssVar('--warn') };
-  return { label: 'Alacsony', cls: 'risk-low', color: cssVar('--success') };
+  if (score >= 4) return { key: 'high', cls: 'risk-high', color: cssVar('--danger') };
+  if (score >= 2.2) return { key: 'medium', cls: 'risk-medium', color: cssVar('--warn') };
+  return { key: 'low', cls: 'risk-low', color: cssVar('--success') };
 }
 
-/* ---------- Belépő animáció ---------- */
+/* ---------- Belepo animacio ---------- */
 function initReveal() {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   document.querySelectorAll('.reveal').forEach((el, i) => {
@@ -472,18 +551,33 @@ function initReveal() {
   });
 }
 
-/* ---------- Sötét mód ---------- */
+/* ---------- Sotet mod ---------- */
 function applyThemeLabel() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  document.getElementById('theme-toggle').textContent = isDark ? '☀️ Világos mód' : '🌙 Sötét mód';
+  document.getElementById('theme-toggle').textContent = isDark ? '☀️ ' + (lang === 'hu' ? 'Világos mód' : 'Light mode') : '🌙 ' + (lang === 'hu' ? 'Sötét mód' : 'Dark mode');
 }
 document.getElementById('theme-toggle').addEventListener('click', () => {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  if (isDark) { document.documentElement.removeAttribute('data-theme'); }
-  else { document.documentElement.setAttribute('data-theme', 'dark'); }
+  if (isDark) { document.documentElement.removeAttribute('data-theme'); } else { document.documentElement.setAttribute('data-theme', 'dark'); }
   try { localStorage.setItem('theme', isDark ? 'light' : 'dark'); } catch (e) {}
   applyThemeLabel();
-  chartInv = null; chartCur = null; // színfrissítéshez újraépítjük a diagramokat
+  chartInv = null; chartCur = null;
+  render();
+});
+
+document.getElementById('lang-toggle').addEventListener('click', () => {
+  lang = lang === 'hu' ? 'en' : 'hu';
+  try { localStorage.setItem('lang', lang); } catch (e) {}
+  applyStaticTranslations();
+  applyThemeLabel();
+  render();
+});
+
+document.getElementById('currency-select').value = currentCurrency;
+document.getElementById('currency-select').addEventListener('change', (e) => {
+  currentCurrency = e.target.value;
+  try { localStorage.setItem('currency', currentCurrency); } catch (e) {}
+  applyStaticTranslations();
   render();
 });
 
@@ -492,12 +586,12 @@ function animateTo(key, el, to, formatFn, duration) {
   const from = animState[key];
   const start = performance.now();
   function step(now) {
-    const t = Math.min((now - start) / duration, 1);
-    const eased = 1 - Math.pow(1 - t, 3);
+    const tt = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - tt, 3);
     const val = from + (to - from) * eased;
     animState[key] = val;
     el.textContent = formatFn(val);
-    if (t < 1) { rafIds[key] = requestAnimationFrame(step); }
+    if (tt < 1) { rafIds[key] = requestAnimationFrame(step); }
     else { animState[key] = to; el.textContent = formatFn(to); delete rafIds[key]; }
   }
   rafIds[key] = requestAnimationFrame(step);
@@ -506,13 +600,11 @@ function animateTo(key, el, to, formatFn, duration) {
 function buildDonut(canvasId, byTypeMap, existing) {
   const typeHex = currentTypeHex();
   const labels = [], data = [], colors = [];
-  Object.keys(typeLabels).forEach(t => {
-    if (byTypeMap[t] > 0) { labels.push(typeLabels[t]); data.push(Math.round(byTypeMap[t])); colors.push(typeHex[t]); }
+  typeKeys.forEach(tk => {
+    if (byTypeMap[tk] > 0) { labels.push(typeLabel(tk)); data.push(Math.round(toDisplay(byTypeMap[tk]) || 0)); colors.push(typeHex[tk]); }
   });
   if (existing) {
-    existing.data.labels = labels;
-    existing.data.datasets[0].data = data;
-    existing.data.datasets[0].backgroundColor = colors;
+    existing.data.labels = labels; existing.data.datasets[0].data = data; existing.data.datasets[0].backgroundColor = colors;
     existing.update();
     return existing;
   }
@@ -520,20 +612,16 @@ function buildDonut(canvasId, byTypeMap, existing) {
     type: 'doughnut',
     data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: cssVar('--paper'), borderWidth: 2 }] },
     options: {
-      responsive: true, maintainAspectRatio: false, cutout: '68%',
-      animation: { duration: 1400, easing: 'easeOutCubic' },
+      responsive: true, maintainAspectRatio: false, cutout: '68%', animation: { duration: 1400, easing: 'easeOutCubic' },
       plugins: {
         legend: { display: false },
-        tooltip: {
-          backgroundColor: cssVar('--tooltip-bg'), padding: 8, titleFont: { family: 'Inter' }, bodyFont: { family: 'Inter' },
-          callbacks: { label: (ctx) => ctx.label + ': ' + fmt(ctx.parsed) }
-        }
+        tooltip: { backgroundColor: cssVar('--tooltip-bg'), padding: 8, titleFont: { family: 'Inter' }, bodyFont: { family: 'Inter' },
+          callbacks: { label: (ctx) => ctx.label + ': ' + fmt(byTypeMap[Object.keys(byTypeMap).find(k => typeLabel(k) === ctx.label)] || 0) } }
       }
     }
   });
 }
 
-/* ---------- Portfólió-egészség pontszám ---------- */
 function computeHealth(rows, weightedRisk, totalRet) {
   const distinctTypes = new Set(rows.map(r => r.type)).size;
   const diversification = Math.min(distinctTypes / 4, 1);
@@ -543,119 +631,81 @@ function computeHealth(rows, weightedRisk, totalRet) {
   const score = Math.round(100 * (0.4 * diversification + 0.3 * riskComponent + 0.3 * returnComponent));
   return { score, distinctTypes };
 }
-function healthTier(score) {
-  if (score >= 75) return { label: 'Kiváló állapot', cls: 'risk-low' };
-  if (score >= 55) return { label: 'Jó állapot', cls: 'risk-low' };
-  if (score >= 35) return { label: 'Kiegyensúlyozott', cls: 'risk-medium' };
-  return { label: 'Figyelmet igényel', cls: 'risk-high' };
+function healthTierKey(score) {
+  if (score >= 75) return { key: 'excellent', cls: 'risk-low' };
+  if (score >= 55) return { key: 'good', cls: 'risk-low' };
+  if (score >= 35) return { key: 'balanced', cls: 'risk-medium' };
+  return { key: 'attention', cls: 'risk-high' };
 }
 function renderHealthRing(score, color) {
   const el = document.getElementById('health-ring');
   const dash = Math.max(0, Math.min(100, score));
   el.innerHTML =
-    '<svg viewBox="0 0 36 36" width="84" height="84" role="img" aria-label="Portfólió-egészség pontszám: ' + score + ' / 100">' +
+    '<svg viewBox="0 0 36 36" width="84" height="84" role="img" aria-label="Health score ' + score + '/100">' +
     '<circle cx="18" cy="18" r="15.9155" fill="none" stroke="' + cssVar('--line-soft') + '" stroke-width="3"></circle>' +
-    '<circle cx="18" cy="18" r="15.9155" fill="none" stroke="' + color + '" stroke-width="3" stroke-linecap="round" ' +
-    'stroke-dasharray="' + dash + ' ' + (100 - dash) + '" transform="rotate(-90 18 18)"></circle>' +
-    '<text x="18" y="21" text-anchor="middle" font-size="10" fill="' + cssVar('--ink') + '">' + score + '</text>' +
-    '</svg>';
+    '<circle cx="18" cy="18" r="15.9155" fill="none" stroke="' + color + '" stroke-width="3" stroke-linecap="round" stroke-dasharray="' + dash + ' ' + (100 - dash) + '" transform="rotate(-90 18 18)"></circle>' +
+    '<text x="18" y="21" text-anchor="middle" font-size="10" fill="' + cssVar('--ink') + '">' + score + '</text></svg>';
 }
 
-/* ---------- Élő piaci referencia: S&P 500 / VOO (Alpha Vantage) ---------- */
-function getApiKey() {
-  try { return localStorage.getItem('av_api_key') || ''; } catch (e) { return ''; }
-}
-function setApiKey(key) {
-  try { localStorage.setItem('av_api_key', key); } catch (e) {}
-}
+/* ---------- Elo piaci referencia ---------- */
+const DEFAULT_API_KEY = 'DFDJRV0KUB37XIKO';
+function getApiKey() { try { return localStorage.getItem('av_api_key') || DEFAULT_API_KEY; } catch (e) { return DEFAULT_API_KEY; } }
+function setApiKey(key) { try { localStorage.setItem('av_api_key', key); } catch (e) {} }
 
 async function loadSp500() {
   const captionEl = document.getElementById('sp500-caption');
   const keyRow = document.getElementById('api-key-row');
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    keyRow.style.display = 'flex';
-    captionEl.textContent = 'Élő adat megjelenítéséhez adj meg egy ingyenes Alpha Vantage API-kulcsot fent (kb. 30 másodperc, nincs bankkártya: alphavantage.co/support/#api-key).';
-    return;
-  }
   keyRow.style.display = 'none';
-  captionEl.textContent = 'Élő adat betöltése…';
+  const apiKey = getApiKey();
+  captionEl.textContent = t('captionLoadingMarket');
   const target = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=VOO&outputsize=compact&apikey=' + encodeURIComponent(apiKey);
-  const attempts = [
-    target,
-    'https://api.allorigins.win/raw?url=' + encodeURIComponent(target),
-  ];
+  const attempts = [target, 'https://api.allorigins.win/raw?url=' + encodeURIComponent(target)];
   for (let i = 0; i < attempts.length; i++) {
     try {
       const res = await fetch(attempts[i]);
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const json = await res.json();
-      if (json['Note']) throw new Error('Napi/perces lekérési limit elérve: ' + json['Note']);
-      if (json['Information']) throw new Error('API-üzenet (gyakran limit vagy érvénytelen kulcs): ' + json['Information']);
-      if (json['Error Message']) throw new Error('API hiba: ' + json['Error Message']);
+      if (json['Note']) throw new Error(json['Note']);
+      if (json['Information']) throw new Error(json['Information']);
+      if (json['Error Message']) throw new Error(json['Error Message']);
       const series = json['Time Series (Daily)'];
-      if (!series) throw new Error('Váratlan adatszerkezet');
-      const dates = Object.keys(series).sort(); // növekvő időrend
+      if (!series) throw new Error('Unexpected data');
+      const dates = Object.keys(series).sort();
       const recent = dates.slice(-120);
-      const labels = recent.map(d => d.slice(5)); // HH-NN formátum, év nélkül
+      const labels = recent.map(d => d.slice(5));
       const closes = recent.map(d => Math.round(parseFloat(series[d]['4. close']) * 100) / 100);
-      if (closes.some(isNaN) || closes.length === 0) throw new Error('Hibás árfolyam-adat');
+      if (closes.some(isNaN) || closes.length === 0) throw new Error('Bad price data');
       sp500Data = { labels, closes };
       render();
-      captionEl.textContent = 'Forrás: Alpha Vantage — VOO (Vanguard S&P 500 ETF) élő napi záróárai, az utolsó ' + closes.length + ' kereskedési nap. Az index helyett a rá épülő, tőzsdén kereskedett ETF-et mutatja, ami gyakorlatilag 1:1 leköveti azt. A szaggatott vonal a portfóliód jelenlegi összhozama — nem valós idősor, mert az eszköz eddig nem mentette a korábbi állapotokat.';
+      captionEl.textContent = t('captionMarketSuccess', closes.length);
       return;
-    } catch (e) {
-      console.error('S&P 500 próbálkozás sikertelen (' + attempts[i] + '):', e);
-    }
+    } catch (e) { console.error('S&P 500 attempt failed (' + attempts[i] + '):', e); }
   }
-  captionEl.textContent = 'Az élő piaci adat jelenleg nem érhető el (hálózati hiba, érvénytelen kulcs, vagy elért napi lekérési limit). Próbáld meg később a "Frissítés" gombbal.';
+  keyRow.style.display = 'flex';
+  captionEl.textContent = t('captionMarketFail');
 }
+
 function renderSp500Chart(labels, closes, portfolioReturnPct) {
   const canvas = document.getElementById('chart-sp500');
   if (!canvas) return;
   document.getElementById('sp500-legend').style.display = 'flex';
-  // A VOO záróárait az időszak eleji értékhez viszonyított % változássá alakítjuk,
-  // hogy összevethető legyen a portfólió %-os hozamával (más-más nagyságrendű nyers árak helyett).
   const base = closes[0];
   const pctSeries = closes.map(c => Math.round(((c - base) / base) * 1000) / 10);
-  const datasets = [{
-    label: 'VOO (S&P 500)',
-    data: pctSeries,
-    borderColor: cssVar('--accent'),
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    pointRadius: 0,
-    tension: 0.25,
-  }];
+  const datasets = [{ label: 'VOO', data: pctSeries, borderColor: cssVar('--accent'), backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.25 }];
   if (portfolioReturnPct !== null && portfolioReturnPct !== undefined) {
-    datasets.push({
-      label: 'Saját portfólió (jelenlegi összhozam)',
-      data: labels.map(() => portfolioReturnPct),
-      borderColor: cssVar('--ink-muted'),
-      backgroundColor: 'transparent',
-      borderWidth: 2,
-      borderDash: [6, 4],
-      pointRadius: 0,
-      tension: 0,
-    });
+    datasets.push({ label: lang === 'hu' ? 'Saját portfólió' : 'Your portfolio', data: labels.map(() => portfolioReturnPct), borderColor: cssVar('--ink-muted'), backgroundColor: 'transparent', borderWidth: 2, borderDash: [6, 4], pointRadius: 0, tension: 0 });
   }
   if (sp500Chart) { sp500Chart.destroy(); }
   sp500Chart = new Chart(canvas, {
-    type: 'line',
-    data: { labels, datasets },
+    type: 'line', data: { labels, datasets },
     options: {
       responsive: true, maintainAspectRatio: false, animation: { duration: 900 },
       scales: {
         x: { ticks: { color: cssVar('--ink-muted'), maxTicksLimit: 6, font: { family: 'Inter', size: 10 } }, grid: { color: cssVar('--line-soft') } },
         y: { ticks: { color: cssVar('--ink-muted'), font: { family: 'Inter', size: 10 }, callback: (v) => v + '%' }, grid: { color: cssVar('--line-soft') } },
       },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: cssVar('--tooltip-bg'), titleFont: { family: 'Inter' }, bodyFont: { family: 'Inter' },
-          callbacks: { label: (ctx) => ctx.dataset.label + ': ' + (ctx.parsed.y >= 0 ? '+' : '') + ctx.parsed.y.toFixed(1) + '%' }
-        }
-      }
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: cssVar('--tooltip-bg'), titleFont: { family: 'Inter' }, bodyFont: { family: 'Inter' },
+        callbacks: { label: (ctx) => ctx.dataset.label + ': ' + (ctx.parsed.y >= 0 ? '+' : '') + ctx.parsed.y.toFixed(1) + '%' } } }
     }
   });
 }
@@ -664,7 +714,6 @@ function effectiveCurrent(h) {
   const sens = riskInfo[h.type].sensitivity;
   return h.current * (1 + (simPct / 100) * sens);
 }
-
 function computeRows() {
   return holdings.map((h, i) => {
     const cur = effectiveCurrent(h);
@@ -673,48 +722,35 @@ function computeRows() {
   });
 }
 
-/* ---------- Mentés/betöltés fájlba (JSON) ---------- */
+/* ---------- Mentes/betolt (JSON) ---------- */
 function exportHoldingsJson() {
   const data = JSON.stringify(holdings, null, 2);
   const blob = new Blob([data], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'befektetesi_portfolio_adatok.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  const a = document.createElement('a'); a.href = url; a.download = 'befektetesi_portfolio_adatok.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
 }
 function importHoldingsJson(file) {
   const reader = new FileReader();
   reader.onload = () => {
     try {
       const parsed = JSON.parse(reader.result);
-      if (!Array.isArray(parsed)) throw new Error('A fájl nem eszközlistát tartalmaz.');
-      const valid = parsed.filter(h => h && typeof h.name === 'string' && typeLabels[h.type] && typeof h.invested === 'number' && typeof h.current === 'number');
-      if (!valid.length) throw new Error('Nem található érvényes eszköz a fájlban.');
-      holdings = valid;
-      render();
-    } catch (e) {
-      console.error('A fájl betöltése sikertelen:', e);
-      alert('A fájl betöltése nem sikerült: érvénytelen vagy sérült JSON. (' + e.message + ')');
-    }
+      if (!Array.isArray(parsed)) throw new Error(t('importInvalidFile'));
+      const valid = parsed.filter(h => h && typeof h.name === 'string' && typeKeys.includes(h.type) && typeof h.invested === 'number' && typeof h.current === 'number');
+      if (!valid.length) throw new Error(t('importNoValid'));
+      holdings = valid; render();
+    } catch (e) { alert(t('importFail', e.message)); }
   };
-  reader.onerror = () => alert('A fájl beolvasása sikertelen.');
+  reader.onerror = () => alert(t('importReadFail'));
   reader.readAsText(file);
 }
 
-/* ---------- Historikus nyomkövetés (localStorage pillanatképek) ---------- */
+/* ---------- Historikus nyomkoveto ---------- */
 function loadHistoryLog() {
-  try {
-    const raw = localStorage.getItem('portfolio_history_log');
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (e) { return []; }
+  try { const raw = localStorage.getItem('portfolio_history_log'); const parsed = raw ? JSON.parse(raw) : []; return Array.isArray(parsed) ? parsed : []; }
+  catch (e) { return []; }
 }
 let historyLog = loadHistoryLog();
-
 function saveHistorySnapshot(totalInv, totalCur, totalRet) {
   const todayKey = new Date().toISOString().slice(0, 10);
   const entry = { date: todayKey, invested: Math.round(totalInv), current: Math.round(totalCur), returnPct: Math.round(totalRet * 10) / 10 };
@@ -723,82 +759,56 @@ function saveHistorySnapshot(totalInv, totalCur, totalRet) {
   historyLog.sort((a, b) => a.date.localeCompare(b.date));
   try { localStorage.setItem('portfolio_history_log', JSON.stringify(historyLog)); } catch (e) {}
 }
-
-let historyChart = null;
 function renderHistoryChart() {
   const wrap = document.getElementById('history-chart-wrap');
   const emptyEl = document.getElementById('history-empty');
   if (historyLog.length < 2) {
-    wrap.style.display = 'none';
-    emptyEl.style.display = 'block';
-    emptyEl.textContent = historyLog.length === 0
-      ? 'Még nincs rögzített mérés. Nyisd meg az eszközt legalább két különböző napon, hogy görbe épüljön.'
-      : 'Eddig 1 nap van rögzítve (' + historyLog[0].date + '). Nyisd meg máskor is, hogy összehasonlítható historikus görbe legyen.';
+    wrap.style.display = 'none'; emptyEl.style.display = 'block';
+    emptyEl.textContent = historyLog.length === 0 ? t('historyEmptyNone') : t('historyEmptyOne', historyLog[0].date);
     return;
   }
-  wrap.style.display = 'block';
-  emptyEl.style.display = 'none';
+  wrap.style.display = 'block'; emptyEl.style.display = 'none';
   const labels = historyLog.map(h => h.date.slice(5));
   const data = historyLog.map(h => h.returnPct);
   if (historyChart) { historyChart.destroy(); }
   historyChart = new Chart(document.getElementById('chart-history'), {
-    type: 'line',
-    data: { labels, datasets: [{ data, borderColor: cssVar('--accent'), backgroundColor: 'transparent', borderWidth: 2, pointRadius: 3, pointBackgroundColor: cssVar('--accent'), tension: 0.2 }] },
+    type: 'line', data: { labels, datasets: [{ data, borderColor: cssVar('--accent'), backgroundColor: 'transparent', borderWidth: 2, pointRadius: 3, pointBackgroundColor: cssVar('--accent'), tension: 0.2 }] },
     options: {
       responsive: true, maintainAspectRatio: false, animation: { duration: 700 },
       scales: {
         x: { ticks: { color: cssVar('--ink-muted'), font: { family: 'Inter', size: 10 } }, grid: { color: cssVar('--line-soft') } },
         y: { ticks: { color: cssVar('--ink-muted'), font: { family: 'Inter', size: 10 }, callback: (v) => v + '%' }, grid: { color: cssVar('--line-soft') } },
       },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: cssVar('--tooltip-bg'), titleFont: { family: 'Inter' }, bodyFont: { family: 'Inter' },
-          callbacks: { label: (ctx) => 'Összhozam: ' + (ctx.parsed.y >= 0 ? '+' : '') + ctx.parsed.y.toFixed(1) + '%' }
-        }
-      }
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: cssVar('--tooltip-bg'), titleFont: { family: 'Inter' }, bodyFont: { family: 'Inter' },
+        callbacks: { label: (ctx) => (ctx.parsed.y >= 0 ? '+' : '') + ctx.parsed.y.toFixed(1) + '%' } } }
     }
   });
 }
 
+/* ---------- Excel export ---------- */
 function exportExcel(rows) {
-  const header = ['Eszköz', 'Típus', 'Befektetett (Ft)', 'Jelenlegi érték (Ft)', 'Hozam (%)', 'Kockázat'];
+  const header = [t('colAsset'), t('colType'), t('colInvested') + ' (' + currentCurrency + ')', t('colCurrent') + ' (' + currentCurrency + ')', t('colReturn') + ' (%)', t('colRisk')];
   const blankRow = ['', '', '', '', '', '', ''];
   const aoa = [blankRow, ['', ...header]];
   rows.forEach(r => {
     const tier = riskTier(riskInfo[r.type].score);
-    aoa.push(['', r.name, typeLabels[r.type], Math.round(r.invested), Math.round(r.effCurrent), Number(r.ret.toFixed(1)), tier.label]);
+    aoa.push(['', r.name, typeLabel(r.type), Math.round(toDisplay(r.invested) || 0), Math.round(toDisplay(r.effCurrent) || 0), Number(r.ret.toFixed(1)), t('riskLabel_' + tier.key)]);
   });
   aoa.push(blankRow);
-
   const ws = XLSX.utils.aoa_to_sheet(aoa);
   ws['!cols'] = [{ wch: 23 }, { wch: 13 }, { wch: 17 }, { wch: 13 }, { wch: 11 }, { wch: 13 }, { wch: 13 }];
-
   const thin = { style: 'thin', color: { rgb: 'FF000000' } };
   const medium = { style: 'medium', color: { rgb: 'FF000000' } };
   const successFill = { fgColor: { rgb: 'FFE7F0EA' } };
   const dangerFill = { fgColor: { rgb: 'FFF7E9E3' } };
   const successFont = { color: { rgb: 'FF2F7D5C' }, bold: true };
   const dangerFont = { color: { rgb: 'FFA6432B' }, bold: true };
-  const headerRowIdx = 1;
-  const firstDataRow = 2;
-  const lastDataRow = 2 + rows.length - 1;
-  const firstCol = 1;
-  const lastCol = 6;
-
+  const headerRowIdx = 1, firstDataRow = 2, lastDataRow = 2 + rows.length - 1, firstCol = 1, lastCol = 6;
   for (let c = firstCol; c <= lastCol; c++) {
     const ref = XLSX.utils.encode_cell({ r: headerRowIdx, c });
     if (!ws[ref]) continue;
-    ws[ref].s = {
-      font: { bold: true, color: { rgb: 'FF1B211F' } },
-      border: {
-        top: medium, bottom: medium,
-        left: c === firstCol ? medium : thin,
-        right: c === lastCol ? medium : thin,
-      },
-    };
+    ws[ref].s = { font: { bold: true, color: { rgb: 'FF1B211F' } }, border: { top: medium, bottom: medium, left: c === firstCol ? medium : thin, right: c === lastCol ? medium : thin } };
   }
-
   rows.forEach((r, i) => {
     const rowIdx = firstDataRow + i;
     const isProfit = r.ret >= 0;
@@ -806,34 +816,87 @@ function exportExcel(rows) {
     for (let c = firstCol; c <= lastCol; c++) {
       const ref = XLSX.utils.encode_cell({ r: rowIdx, c });
       if (!ws[ref]) continue;
-      const style = {
-        fill,
-        border: {
-          top: rowIdx === firstDataRow ? undefined : thin,
-          bottom: rowIdx === lastDataRow ? medium : thin,
-          left: c === firstCol ? medium : thin,
-          right: c === lastCol ? medium : thin,
-        },
-      };
+      const style = { fill, border: { top: rowIdx === firstDataRow ? undefined : thin, bottom: rowIdx === lastDataRow ? medium : thin, left: c === firstCol ? medium : thin, right: c === lastCol ? medium : thin } };
       if (c === 3 || c === 4) style.numFmt = '#,##0';
       if (c === 5) { style.numFmt = '0.0'; style.font = isProfit ? successFont : dangerFont; }
       ws[ref].s = style;
     }
   });
-
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Portfólió');
-  const filename = 'befektetesi_portfolio' + (simPct !== 0 ? '_szimulalt_' + simPct + 'pct' : '') + '.xlsx';
-  XLSX.writeFile(wb, filename);
+  XLSX.utils.book_append_sheet(wb, ws, 'Portfolio');
+  XLSX.writeFile(wb, 'befektetesi_portfolio' + (simPct !== 0 ? '_szimulalt_' + simPct + 'pct' : '') + '.xlsx');
 }
 
+/* ---------- PDF export ---------- */
+function exportPdf(rows, totalInv, totalCur, totalRet, riskTierObj) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const marginX = 15; let y = 20;
+  doc.setFontSize(18); doc.text(t('pdfTitle'), marginX, y); y += 8;
+  doc.setFontSize(10); doc.setTextColor(120);
+  doc.text(t('pdfGenerated') + ': ' + new Date().toLocaleDateString(localeStr()), marginX, y); y += 12;
+  doc.setTextColor(20);
+  doc.setFontSize(13); doc.text(t('pdfSummary'), marginX, y); y += 7;
+  doc.setFontSize(11);
+  doc.text(t('pdfInvestedTotal') + ': ' + fmt(totalInv), marginX, y); y += 6;
+  doc.text(t('pdfCurrentTotal') + ': ' + fmt(totalCur), marginX, y); y += 6;
+  doc.text(t('pdfReturnTotal') + ': ' + fmtPct(totalRet), marginX, y); y += 6;
+  if (riskTierObj) { doc.text(t('pdfRisk') + ': ' + t('riskLabel_' + riskTierObj.key), marginX, y); y += 6; }
+  y += 6;
+  doc.setFontSize(13); doc.text(t('pdfHoldings'), marginX, y); y += 8;
+  doc.setFontSize(10);
+  const cols = [marginX, marginX + 55, marginX + 90, marginX + 120, marginX + 150];
+  doc.setFont(undefined, 'bold');
+  doc.text(t('colAsset'), cols[0], y); doc.text(t('colType'), cols[1], y);
+  doc.text(t('colInvested'), cols[2], y); doc.text(t('colCurrent'), cols[3], y); doc.text(t('colReturn'), cols[4], y);
+  doc.setFont(undefined, 'normal'); y += 5;
+  doc.setDrawColor(200); doc.line(marginX, y, 195, y); y += 5;
+  rows.forEach(r => {
+    if (y > 280) { doc.addPage(); y = 20; }
+    doc.text(String(r.name).slice(0, 22), cols[0], y);
+    doc.text(typeLabel(r.type), cols[1], y);
+    doc.text(fmt(r.invested), cols[2], y);
+    doc.text(fmt(r.effCurrent), cols[3], y);
+    doc.text(fmtPct(r.ret), cols[4], y);
+    y += 6;
+  });
+  doc.save('befektetesi_portfolio_kimutatas.pdf');
+}
+
+/* ---------- Részletes elemzés (helyben generált, nem élő AI-hívás) ---------- */
+function buildDetailedAnalysis(rows, totalInv, totalCur, totalRet, weightedRisk, tierObj, best, worst) {
+  const paragraphs = [];
+  const distinctTypes = new Set(rows.map(r => r.type)).size;
+  if (distinctTypes >= 3) paragraphs.push(t('analysisDiversificationFull', distinctTypes));
+  else if (distinctTypes === 2) paragraphs.push(t('analysisDiversificationPartial', distinctTypes));
+  else paragraphs.push(t('analysisDiversificationLow'));
+
+  const byTypeCur = {};
+  rows.forEach(r => { byTypeCur[r.type] = (byTypeCur[r.type] || 0) + r.effCurrent; });
+  if (totalCur > 0) {
+    const [topType, topVal] = Object.entries(byTypeCur).sort((a, b) => b[1] - a[1])[0];
+    const pct = Math.round((topVal / totalCur) * 100);
+    if (pct >= 45) paragraphs.push(t('analysisConcentration', typeLabel(topType), pct));
+  }
+
+  if (tierObj.key === 'low') paragraphs.push(t('analysisRiskLow'));
+  else if (tierObj.key === 'medium') paragraphs.push(t('analysisRiskMedium'));
+  else paragraphs.push(t('analysisRiskHigh'));
+
+  if (rows.length >= 2) paragraphs.push(t('analysisPerformance', best.name, fmtPct(best.ret), worst.name, fmtPct(worst.ret)));
+
+  if (totalRet >= 0) paragraphs.push(t('analysisReturnPositive', fmtPct(totalRet)));
+  else paragraphs.push(t('analysisReturnNegative', fmtPct(totalRet)));
+
+  return paragraphs;
+}
+
+/* ================= FO RENDER ================= */
 function render() {
   let rows = computeRows();
-
   let totalInv = 0, totalCur = 0;
   const byTypeInv = {}, byTypeCur = {};
-  let best = null, worst = null;
-  let weightedRisk = 0;
+  let best = null, worst = null, weightedRisk = 0;
   rows.forEach(r => {
     totalInv += r.invested; totalCur += r.effCurrent;
     byTypeInv[r.type] = (byTypeInv[r.type] || 0) + r.invested;
@@ -841,9 +904,7 @@ function render() {
     if (!best || r.ret > best.ret) best = r;
     if (!worst || r.ret < worst.ret) worst = r;
   });
-  if (totalCur > 0) {
-    rows.forEach(r => { weightedRisk += (r.effCurrent / totalCur) * riskInfo[r.type].score; });
-  }
+  if (totalCur > 0) rows.forEach(r => { weightedRisk += (r.effCurrent / totalCur) * riskInfo[r.type].score; });
   const totalRet = totalInv > 0 ? ((totalCur - totalInv) / totalInv * 100) : 0;
 
   document.getElementById('sim-tag').style.display = simPct !== 0 ? 'inline-block' : 'none';
@@ -852,24 +913,6 @@ function render() {
   const retEl = document.getElementById('s-return');
   animateTo('ret', retEl, totalRet, fmtPct, 900);
   retEl.style.color = totalRet >= 0 ? 'var(--success)' : 'var(--danger)';
-
-  if (sp500Data) {
-    try { renderSp500Chart(sp500Data.labels, sp500Data.closes, holdings.length ? totalRet : null); }
-    catch (e) { console.error('Az S&P 500 diagram nem tölthető be:', e); }
-  }
-
-  try { localStorage.setItem('portfolio_holdings', JSON.stringify(holdings)); } catch (e) {}
-
-  const historySection = document.getElementById('history-section');
-  if (holdings.length) {
-    historySection.style.display = 'block';
-    // Csak valós (nem szimulált) állapotot rögzítünk, hogy a historikus görbe ne torzuljon.
-    if (simPct === 0) { saveHistorySnapshot(totalInv, totalCur, totalRet); }
-    try { renderHistoryChart(); }
-    catch (e) { console.error('A historikus diagram nem tölthető be:', e); }
-  } else {
-    historySection.style.display = 'none';
-  }
 
   const bw = document.getElementById('best-worst');
   if (holdings.length >= 2) {
@@ -883,13 +926,8 @@ function render() {
   const allocSection = document.getElementById('alloc-section');
   if (totalInv > 0 || totalCur > 0) {
     allocSection.style.display = 'block';
-    try {
-      chartInv = buildDonut('chart-inv', byTypeInv, chartInv);
-      chartCur = buildDonut('chart-cur', byTypeCur, chartCur);
-    } catch (e) {
-      console.error('A diagramok nem tölthetők be:', e);
-      allocSection.style.display = 'none';
-    }
+    try { chartInv = buildDonut('chart-inv', byTypeInv, chartInv); chartCur = buildDonut('chart-cur', byTypeCur, chartCur); }
+    catch (e) { console.error('Charts failed to load:', e); allocSection.style.display = 'none'; }
   } else { allocSection.style.display = 'none'; }
 
   const riskSection = document.getElementById('risk-section');
@@ -900,87 +938,94 @@ function render() {
     document.getElementById('risk-gauge').style.width = Math.min(weightedRisk / 5 * 100, 100) + '%';
     document.getElementById('risk-gauge').style.background = tier.color;
     const badge = document.getElementById('risk-badge');
-    badge.textContent = tier.label + ' kockázat';
+    badge.textContent = t('riskLabel_' + tier.key);
     badge.className = 'risk-badge ' + tier.cls;
-
     const warnEl = document.getElementById('risk-warning');
     const highShare = totalCur > 0 ? (byTypeCur['kripto'] || 0) / totalCur : 0;
-    if (highShare > 0.4) {
-      warnEl.style.display = 'block';
-      warnEl.textContent = 'Figyelem: a portfólió ' + Math.round(highShare * 100) + '%-a magas kockázatú (kripto) eszközben koncentrálódik.';
-    } else { warnEl.style.display = 'none'; }
-  } else {
-    riskSection.style.display = 'none';
-  }
+    if (highShare > 0.4) { warnEl.style.display = 'block'; warnEl.textContent = t('riskWarning', Math.round(highShare * 100)); }
+    else { warnEl.style.display = 'none'; }
+  } else { riskSection.style.display = 'none'; }
 
   const healthSection = document.getElementById('health-section');
   if (holdings.length && tier) {
     healthSection.style.display = 'block';
     const health = computeHealth(rows, weightedRisk, totalRet);
-    const hTier = healthTier(health.score);
+    const hTier = healthTierKey(health.score);
     renderHealthRing(health.score, cssVar(hTier.cls === 'risk-low' ? '--success' : hTier.cls === 'risk-medium' ? '--warn' : '--danger'));
-    document.getElementById('health-label').textContent = hTier.label + ' — ' + health.score + '/100';
-    const divText = health.distinctTypes >= 3 ? 'jól diverzifikált' : health.distinctTypes === 2 ? 'részben diverzifikált' : 'koncentrált, kevéssé diverzifikált';
+    document.getElementById('health-label').textContent = t('healthTier_' + hTier.key) + ' — ' + health.score + '/100';
+    const divKey = health.distinctTypes >= 3 ? 'div_full' : health.distinctTypes === 2 ? 'div_partial' : 'div_concentrated';
     document.getElementById('health-narrative').textContent =
-      'A portfólió ' + divText + ', ' + tier.label.toLowerCase() + ' kockázati szinten áll, összesített hozama ' + fmtPct(totalRet) + '.';
-
+      lang === 'hu'
+        ? 'A portfólió ' + t(divKey) + ', ' + t('riskName_' + tier.key) + ' kockázati szinten áll, összesített hozama ' + fmtPct(totalRet) + '.'
+        : 'The portfolio is ' + t(divKey) + ', at a ' + t('riskName_' + tier.key) + ' risk level, with a total return of ' + fmtPct(totalRet) + '.';
     const badges = [];
-    if (health.distinctTypes >= 3) badges.push('Diverzifikált portfólió');
-    if (rows.some(r => r.ret > 0)) badges.push('Van nyereséges eszköz');
-    if (weightedRisk < 2.5) badges.push('Kiegyensúlyozott kockázat');
-    if (totalRet > 0) badges.push('Pozitív összhozam');
-    const badgeRow = document.getElementById('badge-row');
-    badgeRow.innerHTML = badges.map(b => '<span class="badge-chip">' + b + '</span>').join('');
-  } else {
-    healthSection.style.display = 'none';
+    if (health.distinctTypes >= 3) badges.push(t('badge_diversified'));
+    if (rows.some(r => r.ret > 0)) badges.push(t('badge_profit'));
+    if (weightedRisk < 2.5) badges.push(t('badge_balanced'));
+    if (totalRet > 0) badges.push(t('badge_positive'));
+    document.getElementById('badge-row').innerHTML = badges.map(b => '<span class="badge-chip">' + b + '</span>').join('');
+  } else { healthSection.style.display = 'none'; }
+
+  if (sp500Data) {
+    try { renderSp500Chart(sp500Data.labels, sp500Data.closes, holdings.length ? totalRet : null); }
+    catch (e) { console.error('S&P 500 chart failed:', e); }
   }
+
+  try { localStorage.setItem('portfolio_holdings', JSON.stringify(holdings)); } catch (e) {}
+
+  const historySection = document.getElementById('history-section');
+  if (holdings.length) {
+    historySection.style.display = 'block';
+    if (simPct === 0) { saveHistorySnapshot(totalInv, totalCur, totalRet); }
+    try { renderHistoryChart(); } catch (e) { console.error('History chart failed:', e); }
+  } else { historySection.style.display = 'none'; }
 
   let viewRows = filterType === 'all' ? rows : rows.filter(r => r.type === filterType);
   if (sortKey) {
     viewRows = [...viewRows].sort((a, b) => {
       let av, bv;
       if (sortKey === 'name') { av = a.name.toLowerCase(); bv = b.name.toLowerCase(); }
-      else if (sortKey === 'type') { av = typeLabels[a.type]; bv = typeLabels[b.type]; }
+      else if (sortKey === 'type') { av = typeLabel(a.type); bv = typeLabel(b.type); }
       else if (sortKey === 'invested') { av = a.invested; bv = b.invested; }
       else if (sortKey === 'current') { av = a.effCurrent; bv = b.effCurrent; }
       else if (sortKey === 'return') { av = a.ret; bv = b.ret; }
-      if (av < bv) return -1 * sortDir;
-      if (av > bv) return 1 * sortDir;
-      return 0;
+      if (av < bv) return -1 * sortDir; if (av > bv) return 1 * sortDir; return 0;
     });
   }
 
   const body = document.getElementById('holdings-body');
   body.innerHTML = '';
   document.getElementById('empty-state').style.display = viewRows.length ? 'none' : 'block';
-  document.getElementById('empty-state').textContent = holdings.length
-    ? 'Nincs a szűrésnek megfelelő tétel.'
-    : 'Még nincs felvett eszköz. Adj hozzá egyet fent.';
+  document.getElementById('empty-state').textContent = holdings.length ? t('emptyStateFiltered') : t('emptyStateNone');
 
   viewRows.forEach(r => {
     const retColor = r.ret >= 0 ? 'var(--success)' : 'var(--danger)';
     const rowTier = riskTier(riskInfo[r.type].score);
-    const tr = document.createElement('tr');
-    tr.innerHTML = '<td>' + r.name + '</td>' +
-      '<td style="color:var(--ink-muted);">' + typeLabels[r.type] + '</td>' +
+    const trEl = document.createElement('tr');
+    trEl.innerHTML = '<td>' + r.name + '</td>' +
+      '<td style="color:var(--ink-muted);">' + typeLabel(r.type) + '</td>' +
       '<td class="num" style="text-align:right;">' + fmt(r.invested) + '</td>' +
       '<td class="num" style="text-align:right;">' + fmt(r.effCurrent) + '</td>' +
       '<td class="num" style="text-align:right; color:' + retColor + ';">' + fmtPct(r.ret) + '</td>' +
-      '<td><span class="risk-badge ' + rowTier.cls + '">' + rowTier.label + '</span></td>' +
-      '<td style="text-align:center;"><button data-i="' + r.index + '" class="del" aria-label="Törlés">✕</button></td>';
-    body.appendChild(tr);
+      '<td><span class="risk-badge ' + rowTier.cls + '">' + t('riskLabel_' + rowTier.key) + '</span></td>' +
+      '<td style="text-align:center;"><button data-i="' + r.index + '" class="del" aria-label="' + t('deleteAria') + '">✕</button></td>';
+    body.appendChild(trEl);
   });
-
-  document.querySelectorAll('.del').forEach(btn => {
-    btn.addEventListener('click', () => { holdings.splice(parseInt(btn.dataset.i), 1); render(); });
-  });
+  document.querySelectorAll('.del').forEach(btn => { btn.addEventListener('click', () => { holdings.splice(parseInt(btn.dataset.i), 1); render(); }); });
 
   document.getElementById('export-xlsx').onclick = () => {
-    try { exportExcel(viewRows); }
-    catch (e) {
-      console.error('Az Excel export nem sikerült:', e);
-      alert('Az Excel export jelenleg nem sikerült. Ellenőrizd az internetkapcsolatot, majd próbáld újra.');
-    }
+    try { exportExcel(viewRows); } catch (e) { console.error('Excel export failed:', e); alert(t('excelExportFail')); }
+  };
+  document.getElementById('export-pdf').onclick = () => {
+    try { exportPdf(viewRows, totalInv, totalCur, totalRet, tier); } catch (e) { console.error('PDF export failed:', e); alert(t('pdfExportFail')); }
+  };
+  document.getElementById('analysis-btn').onclick = () => {
+    const box = document.getElementById('ai-box');
+    if (!holdings.length) { box.classList.add('visible'); box.textContent = t('analysisNoHoldings'); return; }
+    const paragraphs = buildDetailedAnalysis(viewRows.length ? viewRows : rows, totalInv, totalCur, totalRet, weightedRisk, tier || riskTier(1), best, worst);
+    box.classList.add('visible');
+    box.innerHTML = paragraphs.map(p => '<p style="margin:0 0 10px;">' + p + '</p>').join('') +
+      '<p style="margin:14px 0 0; font-size:11px; color:var(--ink-faint);">' + t('analysisNote') + '</p>';
   };
 
   document.querySelectorAll('.sort-btn').forEach(btn => {
@@ -997,15 +1042,11 @@ document.getElementById('f-add').addEventListener('click', () => {
   const current = parseFloat(document.getElementById('f-current').value);
   const errEl = document.getElementById('f-error');
   if (!name || isNaN(invested) || isNaN(current) || invested < 0 || current < 0) {
-    errEl.textContent = 'Add meg az eszköz nevét és érvényes, nem negatív összegeket.';
-    errEl.style.display = 'block';
-    return;
+    errEl.textContent = t('errFillFields'); errEl.style.display = 'block'; return;
   }
   errEl.style.display = 'none';
   holdings.push({ name, type, invested, current });
-  document.getElementById('f-name').value = '';
-  document.getElementById('f-invested').value = '';
-  document.getElementById('f-current').value = '';
+  document.getElementById('f-name').value = ''; document.getElementById('f-invested').value = ''; document.getElementById('f-current').value = '';
   render();
 });
 
@@ -1015,17 +1056,9 @@ document.getElementById('sim-slider').addEventListener('input', (e) => {
   render();
 });
 document.getElementById('sim-reset').addEventListener('click', () => {
-  simPct = 0;
-  document.getElementById('sim-slider').value = 0;
-  document.getElementById('sim-value').textContent = '0%';
-  render();
+  simPct = 0; document.getElementById('sim-slider').value = 0; document.getElementById('sim-value').textContent = '0%'; render();
 });
-
-document.getElementById('filter-type').addEventListener('change', (e) => {
-  filterType = e.target.value;
-  render();
-});
-
+document.getElementById('filter-type').addEventListener('change', (e) => { filterType = e.target.value; render(); });
 document.querySelectorAll('.sort-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     const key = btn.dataset.key;
@@ -1033,17 +1066,13 @@ document.querySelectorAll('.sort-btn').forEach(btn => {
     render();
   });
 });
-
 document.getElementById('save-json').addEventListener('click', exportHoldingsJson);
-document.getElementById('load-json').addEventListener('click', () => {
-  document.getElementById('load-json-input').click();
-});
+document.getElementById('load-json').addEventListener('click', () => document.getElementById('load-json-input').click());
 document.getElementById('load-json-input').addEventListener('change', (e) => {
   const file = e.target.files && e.target.files[0];
   if (file) importHoldingsJson(file);
   e.target.value = '';
 });
-
 document.getElementById('api-key-save').addEventListener('click', () => {
   const val = document.getElementById('api-key-input').value.trim();
   if (!val) return;
@@ -1051,10 +1080,12 @@ document.getElementById('api-key-save').addEventListener('click', () => {
   loadSp500();
 });
 
+applyStaticTranslations();
 applyThemeLabel();
 initReveal();
 render();
 loadSp500();
+loadFxRates();
 document.getElementById('sp500-retry').addEventListener('click', loadSp500);
 </script>
 </body>
