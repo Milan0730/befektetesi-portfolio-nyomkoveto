@@ -18,35 +18,63 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --paper: #F6F4EF; --ink: #1B211F; --ink-muted: #6B6A62; --ink-faint: #96938A;
+    --paper: #F3F1EA; --ink: #1B211F; --ink-muted: #6B6A62; --ink-faint: #96938A;
     --accent: #1F5C4F; --success: #2F7D5C; --success-bg: #E7F0EA;
     --danger: #A6432B; --danger-bg: #F7E9E3; --warn: #A9791E; --warn-bg: #F3EBD8;
-    --line: #DAD5C8; --line-soft: #E9E5DB; --input-bg: #FFFFFF; --tooltip-bg: #1B211F;
+    --line: #DAD5C8; --line-soft: #E9E5DB; --input-bg: rgba(255,255,255,0.65); --tooltip-bg: #1B211F;
     --cat-reszveny: #35577A; --cat-kotveny: #5C7A72; --cat-kripto: #B98B2E; --cat-keszpenz: #8C8676;
+    --glass-bg: rgba(255,255,255,0.5); --glass-border: rgba(27,33,31,0.09);
+    --glass-shadow: 0 10px 34px rgba(31,45,40,0.10);
+    --accent-glow: rgba(31,92,79,0.30);
+    --blob1: rgba(31,92,79,0.22); --blob2: rgba(185,139,46,0.16); --blob3: rgba(53,87,122,0.16);
   }
   [data-theme="dark"] {
-    --paper: #171C19; --ink: #ECE8DE; --ink-muted: #A9A599; --ink-faint: #7D7A6E;
+    --paper: #10141F; --ink: #ECE8DE; --ink-muted: #A9A599; --ink-faint: #7D7A6E;
     --accent: #4FB89B; --success: #5CB88F; --success-bg: #1E2B23;
     --danger: #E08B6C; --danger-bg: #332119; --warn: #D9A94A; --warn-bg: #332B18;
-    --line: #3A3A34; --line-soft: #262622; --input-bg: #20241F; --tooltip-bg: #0E1210;
+    --line: #3A3A34; --line-soft: #262622; --input-bg: rgba(255,255,255,0.05); --tooltip-bg: #0E1210;
     --cat-reszveny: #7FA3CC; --cat-kotveny: #93B6A9; --cat-kripto: #E0B564; --cat-keszpenz: #ADA89C;
+    --glass-bg: rgba(255,255,255,0.045); --glass-border: rgba(255,255,255,0.10);
+    --glass-shadow: 0 10px 40px rgba(0,0,0,0.45);
+    --accent-glow: rgba(79,184,155,0.35);
+    --blob1: rgba(79,184,155,0.30); --blob2: rgba(224,181,100,0.20); --blob3: rgba(127,163,204,0.22);
   }
   * { box-sizing: border-box; }
   html { -webkit-font-smoothing: antialiased; }
   body {
     font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); background: var(--paper);
-    margin: 0; padding: 56px 24px 100px; transition: background 0.3s ease, color 0.3s ease;
+    margin: 0; padding: 56px 24px 100px; transition: background 0.4s ease, color 0.4s ease;
+    position: relative; overflow-x: hidden;
   }
+  .bg-blobs { position: fixed; inset: 0; overflow: hidden; z-index: -1; pointer-events: none; }
+  .blob { position: absolute; border-radius: 50%; filter: blur(90px); }
+  .blob-1 { width: 460px; height: 460px; background: var(--blob1); top: -140px; left: -120px; animation: drift1 36s ease-in-out infinite alternate; }
+  .blob-2 { width: 420px; height: 420px; background: var(--blob2); bottom: -160px; right: -100px; animation: drift2 42s ease-in-out infinite alternate; }
+  .blob-3 { width: 360px; height: 360px; background: var(--blob3); top: 38%; left: 55%; animation: drift3 48s ease-in-out infinite alternate; }
+  @keyframes drift1 { from { transform: translate(0,0) scale(1); } to { transform: translate(90px, 70px) scale(1.18); } }
+  @keyframes drift2 { from { transform: translate(0,0) scale(1); } to { transform: translate(-70px,-50px) scale(1.12); } }
+  @keyframes drift3 { from { transform: translate(0,0) scale(1); } to { transform: translate(-110px, 60px) scale(0.88); } }
   .page { max-width: 820px; margin: 0 auto; }
   .num { font-variant-numeric: tabular-nums; }
-  .header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
-  h1 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 34px; letter-spacing: -0.01em; margin: 0 0 6px; }
+  .header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
+  h1 {
+    font-family: 'Fraunces', serif; font-weight: 600; font-size: 36px; letter-spacing: -0.01em; margin: 0 0 8px;
+    background: linear-gradient(120deg, var(--accent), var(--cat-kripto), var(--cat-reszveny), var(--accent));
+    background-size: 300% 300%; -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: gradientShift 9s ease infinite;
+  }
+  @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
   .lede { font-size: 14px; color: var(--ink-muted); margin: 0; max-width: 62ch; }
   .header-controls { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
   .control-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-  .reveal { opacity: 0; transition: opacity 0.55s ease; }
+  .reveal { opacity: 0; transition: opacity 0.6s ease; }
   .reveal.is-visible { opacity: 1; }
-  section { margin-bottom: 44px; }
+  section {
+    margin-bottom: 28px; background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border); border-radius: 18px; padding: 26px 28px; box-shadow: var(--glass-shadow);
+    transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease, background 0.4s ease;
+  }
+  section:hover { transform: translateY(-3px); border-color: var(--accent); }
   .section-label {
     font-size: 13px; color: var(--ink-muted); margin: 0 0 14px; border-bottom: 1px solid var(--line);
     padding-bottom: 8px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap;
@@ -55,17 +83,25 @@
   label { display: block; font-size: 12px; color: var(--ink-muted); margin-bottom: 5px; }
   input, select {
     width: 100%; font-family: 'Inter', sans-serif; font-size: 14px; padding: 9px 10px;
-    border: 1px solid var(--line); border-radius: 3px; background: var(--input-bg); color: var(--ink);
+    border: 1px solid var(--glass-border); border-radius: 8px; background: var(--input-bg); color: var(--ink);
+    backdrop-filter: blur(8px); transition: border-color 0.25s ease, box-shadow 0.25s ease;
   }
-  input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  input:focus-visible, select:focus-visible {
+    outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   button {
     font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; padding: 9px 16px;
-    background: var(--ink); color: var(--paper); border: none; border-radius: 3px; cursor: pointer; white-space: nowrap;
+    background: var(--ink); color: var(--paper); border: none; border-radius: 8px; cursor: pointer; white-space: nowrap;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   }
-  button:hover { background: var(--accent); color: #fff; }
-  button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); padding: 7px 12px; font-size: 13px; }
-  button.ghost:hover { background: var(--line-soft); color: var(--ink); }
-  button:disabled { opacity: 0.5; cursor: default; }
+  button:hover { background: var(--accent); color: #fff; transform: translateY(-1px); box-shadow: 0 8px 20px var(--accent-glow); }
+  button:active { transform: translateY(0); box-shadow: none; }
+  button.ghost {
+    background: var(--glass-bg); backdrop-filter: blur(8px); color: var(--ink); border: 1px solid var(--glass-border); padding: 7px 12px; font-size: 13px;
+  }
+  button.ghost:hover { background: var(--glass-bg); border-color: var(--accent); color: var(--ink); box-shadow: 0 6px 16px var(--accent-glow); }
+  button:disabled { opacity: 0.5; cursor: default; transform: none; box-shadow: none; }
   #f-error { font-size: 13px; color: var(--danger); margin: 10px 0 0; }
   .stat-row { display: flex; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
   .stat { flex: 1; padding: 18px 20px 18px 0; min-width: 140px; }
@@ -80,7 +116,7 @@
   .health-text { flex: 1; min-width: 220px; }
   .health-text p { margin: 0 0 6px; font-size: 14px; line-height: 1.5; }
   .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-  .badge-chip { font-size: 12px; padding: 4px 11px; border-radius: 20px; background: var(--line-soft); color: var(--ink-muted); display: inline-block; animation: pop 0.4s ease both; }
+  .badge-chip { font-size: 12px; padding: 4px 11px; border-radius: 20px; background: var(--glass-border); color: var(--ink-muted); display: inline-block; animation: pop 0.4s ease both; backdrop-filter: blur(6px); }
   @keyframes pop { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
   .donut-row { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
   .donut-col p { font-size: 13px; color: var(--ink-muted); text-align: center; margin: 0 0 8px; }
@@ -120,7 +156,7 @@
   .del { border: none; background: transparent; color: var(--ink-faint); cursor: pointer; font-size: 15px; padding: 2px 6px; border-radius: 3px; }
   .del:hover { color: var(--danger); background: var(--line-soft); }
   #empty-state { font-size: 14px; color: var(--ink-faint); text-align: center; padding: 36px 0; }
-  .ai-box { background: var(--line-soft); border-radius: 4px; padding: 14px 16px; margin-top: 14px; font-size: 13px; display: none; }
+  .ai-box { background: var(--glass-border); backdrop-filter: blur(10px); border-radius: 12px; padding: 14px 16px; margin-top: 14px; font-size: 13px; display: none; }
   .ai-box.visible { display: block; }
   .ai-box a { color: var(--accent); }
   footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 12px; color: var(--ink-faint); }
@@ -135,11 +171,14 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .reveal { opacity: 1 !important; transform: none !important; }
+    .blob { animation: none !important; }
+    h1 { animation: none !important; }
     * { transition: none !important; animation: none !important; }
   }
 </style>
 </head>
 <body>
+<div class="bg-blobs"><div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div></div>
 <div class="page">
 
   <div class="header-row reveal">
@@ -375,6 +414,11 @@ const translations = {
     importReadFail: "A fájl beolvasása sikertelen.",
     analysisNoHoldings: "Adj hozzá legalább egy eszközt, hogy elemzést tudjunk készíteni.",
     analysisNote: "Ez az elemzés helyben, a böngésződben készül a portfóliód adatai alapján — nem élő AI-modell generálja, hanem a projektben már meglévő kockázati és diverzifikációs logika bővebb, szöveges kifejtése.",
+    aiLoading: "AI-elemzés készítése…",
+    aiLabel: "🤖 AI-elemzés (Claude, élő hívás)",
+    localLabel: "⚙️ Helyi elemzés (nincs élő AI-hívás beállítva)",
+    localLabelFallback: "⚙️ Helyi elemzés (az élő AI-hívás most nem sikerült)",
+    aiFallbackNote: "Az élő AI-hívás nem sikerült, ezért helyben generált elemzés jelenik meg helyette.",
     analysisDiversificationFull: (n) => "A portfóliód " + n + " különböző eszköztípust tartalmaz, ami jó diverzifikációt jelent — ez csökkenti annak esélyét, hogy egyetlen piaci esemény aránytalanul nagy hatással legyen az egészre.",
     analysisDiversificationPartial: (n) => "A portfóliód " + n + " eszköztípust tartalmaz. Ez részleges diverzifikáció — érdemes megfontolni egy további típus (pl. kötvény vagy készpénz) bevonását a kockázat további csökkentéséhez.",
     analysisDiversificationLow: "A portfóliód jelenleg egyetlen eszköztípusra koncentrálódik. Ez jelentősen megnöveli a kockázatot, mert egyetlen piaci mozgás az egész portfóliót érintheti.",
@@ -434,6 +478,11 @@ const translations = {
     importReadFail: "Failed to read the file.",
     analysisNoHoldings: "Add at least one asset so an analysis can be generated.",
     analysisNote: "This analysis is generated locally, in your browser, from your portfolio's data — it isn't produced by a live AI model, but is a more detailed, written version of the risk and diversification logic already built into this project.",
+    aiLoading: "Generating AI analysis…",
+    aiLabel: "🤖 AI analysis (Claude, live call)",
+    localLabel: "⚙️ Local analysis (no live AI call configured)",
+    localLabelFallback: "⚙️ Local analysis (the live AI call just failed)",
+    aiFallbackNote: "The live AI call failed, so a locally generated analysis is shown instead.",
     analysisDiversificationFull: (n) => "Your portfolio includes " + n + " different asset types, which is good diversification — it reduces the chance that a single market event will disproportionately affect the whole portfolio.",
     analysisDiversificationPartial: (n) => "Your portfolio includes " + n + " asset types. This is partial diversification — consider adding another type (e.g. bonds or cash) to further reduce risk.",
     analysisDiversificationLow: "Your portfolio is currently concentrated in a single asset type. This significantly increases risk, since a single market move can affect the entire portfolio.",
@@ -545,10 +594,29 @@ function riskTier(score) {
 /* ---------- Belepo animacio ---------- */
 function initReveal() {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  document.querySelectorAll('.reveal').forEach((el, i) => {
-    if (reduced) { el.classList.add('is-visible'); return; }
-    setTimeout(() => el.classList.add('is-visible'), 60 + i * 90);
+  const items = document.querySelectorAll('.reveal');
+  if (reduced) { items.forEach(el => el.classList.add('is-visible')); return; }
+  if (!('IntersectionObserver' in window)) { items.forEach(el => el.classList.add('is-visible')); return; }
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+  items.forEach((el, i) => {
+    el.style.transitionDelay = Math.min(i, 6) * 70 + 'ms';
+    observer.observe(el);
   });
+}
+
+function withViewTransition(fn) {
+  if (document.startViewTransition) {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) { fn(); return; }
+    document.startViewTransition(() => fn());
+  } else { fn(); }
 }
 
 /* ---------- Sotet mod ---------- */
@@ -557,28 +625,34 @@ function applyThemeLabel() {
   document.getElementById('theme-toggle').textContent = isDark ? '☀️ ' + (lang === 'hu' ? 'Világos mód' : 'Light mode') : '🌙 ' + (lang === 'hu' ? 'Sötét mód' : 'Dark mode');
 }
 document.getElementById('theme-toggle').addEventListener('click', () => {
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  if (isDark) { document.documentElement.removeAttribute('data-theme'); } else { document.documentElement.setAttribute('data-theme', 'dark'); }
-  try { localStorage.setItem('theme', isDark ? 'light' : 'dark'); } catch (e) {}
-  applyThemeLabel();
-  chartInv = null; chartCur = null;
-  render();
+  withViewTransition(() => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (isDark) { document.documentElement.removeAttribute('data-theme'); } else { document.documentElement.setAttribute('data-theme', 'dark'); }
+    try { localStorage.setItem('theme', isDark ? 'light' : 'dark'); } catch (e) {}
+    applyThemeLabel();
+    chartInv = null; chartCur = null;
+    render();
+  });
 });
 
 document.getElementById('lang-toggle').addEventListener('click', () => {
-  lang = lang === 'hu' ? 'en' : 'hu';
-  try { localStorage.setItem('lang', lang); } catch (e) {}
-  applyStaticTranslations();
-  applyThemeLabel();
-  render();
+  withViewTransition(() => {
+    lang = lang === 'hu' ? 'en' : 'hu';
+    try { localStorage.setItem('lang', lang); } catch (e) {}
+    applyStaticTranslations();
+    applyThemeLabel();
+    render();
+  });
 });
 
 document.getElementById('currency-select').value = currentCurrency;
 document.getElementById('currency-select').addEventListener('change', (e) => {
-  currentCurrency = e.target.value;
-  try { localStorage.setItem('currency', currentCurrency); } catch (e) {}
-  applyStaticTranslations();
-  render();
+  withViewTransition(() => {
+    currentCurrency = e.target.value;
+    try { localStorage.setItem('currency', currentCurrency); } catch (e) {}
+    applyStaticTranslations();
+    render();
+  });
 });
 
 function animateTo(key, el, to, formatFn, duration) {
@@ -863,6 +937,47 @@ function exportPdf(rows, totalInv, totalCur, totalRet, riskTierObj) {
   doc.save('befektetesi_portfolio_kimutatas.pdf');
 }
 
+/* ---------- Élő AI-elemzés (Cloudflare Worker proxy-n keresztül) ---------- */
+// Illeszd be ide a saját Cloudflare Worker URL-edet (lásd: cloudflare_worker_ai_proxy.js).
+// Ha üresen hagyod, az app automatikusan a helyben generált elemzésre esik vissza.
+const WORKER_URL = '';
+// Ugyanaz az érték, amit a Worker APP_SECRET titkos változójába beállítottál.
+// FONTOS: ez itt, a kliens-oldali kódban NEM valódi titok (bárki elolvashatja a
+// forráskódban) — csak az automatizált szkennelés ellen szűr, lásd a Worker fájl elején.
+const APP_SECRET = '';
+
+function buildAiPrompt(rows, totalInv, totalCur, totalRet, tierObj) {
+  const lines = rows.map(r => '- ' + r.name + ' (' + typeLabel(r.type) + '): ' + t('colInvested') + ' ' + fmt(r.invested) + ', ' + t('colCurrent') + ' ' + fmt(r.effCurrent) + ', ' + t('colReturn') + ' ' + fmtPct(r.ret));
+  if (lang === 'hu') {
+    return 'Elemezd az alábbi befektetési portfóliót röviden (max. 5-6 mondatban), konkrétan a diverzifikációról, a kockázati kitettségről és arról, mire érdemes figyelni:\n\n' +
+      'Összesített befektetett érték: ' + fmt(totalInv) + '\nJelenlegi érték: ' + fmt(totalCur) + '\nÖsszesített hozam: ' + fmtPct(totalRet) + '\nKockázati szint: ' + t('riskLabel_' + tierObj.key) + '\n\nTételek:\n' + lines.join('\n');
+  }
+  return 'Analyze the following investment portfolio briefly (max 5-6 sentences), concretely covering diversification, risk exposure, and what to watch out for:\n\n' +
+    'Total invested: ' + fmt(totalInv) + '\nCurrent value: ' + fmt(totalCur) + '\nTotal return: ' + fmtPct(totalRet) + '\nRisk level: ' + t('riskLabel_' + tierObj.key) + '\n\nHoldings:\n' + lines.join('\n');
+}
+
+async function callAiWorker(prompt) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-App-Secret': APP_SECRET },
+      body: JSON.stringify({ prompt }),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    if (!data.text) throw new Error('Empty response');
+    return data.text;
+  } catch (e) {
+    clearTimeout(timeoutId);
+    throw e;
+  }
+}
+
 /* ---------- Részletes elemzés (helyben generált, nem élő AI-hívás) ---------- */
 function buildDetailedAnalysis(rows, totalInv, totalCur, totalRet, weightedRisk, tierObj, best, worst) {
   const paragraphs = [];
@@ -1019,13 +1134,33 @@ function render() {
   document.getElementById('export-pdf').onclick = () => {
     try { exportPdf(viewRows, totalInv, totalCur, totalRet, tier); } catch (e) { console.error('PDF export failed:', e); alert(t('pdfExportFail')); }
   };
-  document.getElementById('analysis-btn').onclick = () => {
+  document.getElementById('analysis-btn').onclick = async () => {
     const box = document.getElementById('ai-box');
     if (!holdings.length) { box.classList.add('visible'); box.textContent = t('analysisNoHoldings'); return; }
-    const paragraphs = buildDetailedAnalysis(viewRows.length ? viewRows : rows, totalInv, totalCur, totalRet, weightedRisk, tier || riskTier(1), best, worst);
     box.classList.add('visible');
-    box.innerHTML = paragraphs.map(p => '<p style="margin:0 0 10px;">' + p + '</p>').join('') +
-      '<p style="margin:14px 0 0; font-size:11px; color:var(--ink-faint);">' + t('analysisNote') + '</p>';
+
+    const localAnalysis = (labelKey) => {
+      const paragraphs = buildDetailedAnalysis(viewRows.length ? viewRows : rows, totalInv, totalCur, totalRet, weightedRisk, tier || riskTier(1), best, worst);
+      return '<p style="margin:0 0 10px; font-weight:500;">' + t(labelKey) + '</p>' +
+        paragraphs.map(p => '<p style="margin:0 0 10px;">' + p + '</p>').join('') +
+        '<p style="margin:14px 0 0; font-size:11px; color:var(--ink-faint);">' + t('analysisNote') + '</p>';
+    };
+
+    if (!WORKER_URL) {
+      box.innerHTML = localAnalysis('localLabel');
+      return;
+    }
+
+    box.innerHTML = '<p>' + t('aiLoading') + '</p>';
+    try {
+      const prompt = buildAiPrompt(viewRows.length ? viewRows : rows, totalInv, totalCur, totalRet, tier || riskTier(1));
+      const aiText = await callAiWorker(prompt);
+      box.innerHTML = '<p style="margin:0 0 10px; font-weight:500;">' + t('aiLabel') + '</p>' +
+        '<p style="margin:0; white-space:pre-wrap;">' + aiText.replace(/</g, '&lt;') + '</p>';
+    } catch (e) {
+      console.error('Live AI call failed:', e);
+      box.innerHTML = '<p style="margin:0 0 10px; font-size:12px; color:var(--warn);">' + t('aiFallbackNote') + '</p>' + localAnalysis('localLabelFallback');
+    }
   };
 
   document.querySelectorAll('.sort-btn').forEach(btn => {
