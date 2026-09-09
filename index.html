@@ -143,6 +143,23 @@
   .history-holder { position: relative; height: 160px; }
   .history-empty { font-size: 13px; color: var(--ink-faint); padding: 20px 0; text-align: center; }
   .file-ops, .action-ops { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tab-bar { display: flex; gap: 10px; margin-bottom: 28px; flex-wrap: wrap; }
+  .tab-btn {
+    padding: 10px 20px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--glass-bg);
+    backdrop-filter: blur(10px); color: var(--ink-muted); font-weight: 500; font-size: 14px; cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+  }
+  .tab-btn:hover { transform: translateY(-1px); color: var(--ink); }
+  .tab-btn.active { color: #fff; background: var(--accent); border-color: var(--accent); box-shadow: 0 8px 22px var(--accent-glow); }
+  .info-tip { cursor: help; border-bottom: 1px dotted var(--ink-faint); position: relative; }
+  .info-tip::after {
+    content: attr(data-tip); position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%);
+    background: var(--tooltip-bg); color: #fff; padding: 8px 11px; border-radius: 8px; font-size: 12px;
+    line-height: 1.4; white-space: normal; width: 230px; opacity: 0; pointer-events: none;
+    transition: opacity 0.2s ease; z-index: 20; box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  }
+  .info-tip:hover::after, .info-tip:focus::after { opacity: 1; }
+  .agent-btn.active-agent { border-color: var(--accent); color: var(--accent); }
   .table-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 4px; flex-wrap: wrap; }
   .table-toolbar select { width: auto; padding: 6px 8px; font-size: 13px; }
   table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -204,6 +221,13 @@
     </div>
   </div>
 
+  <div class="tab-bar reveal">
+    <button class="tab-btn active" id="tab-btn-investments" data-tab="investments" data-i18n="tabInvestments">Befektetések</button>
+    <button class="tab-btn" id="tab-btn-credit" data-tab="credit" data-i18n="tabCredit">Hitelkockázat</button>
+    <button class="tab-btn" id="tab-btn-planning" data-tab="planning" data-i18n="tabPlanning">Tervezés</button>
+  </div>
+
+  <div id="tab-panel-investments" class="tab-panel">
   <section class="reveal">
     <p class="section-label" data-i18n="sectionAddAsset">Eszköz felvétele</p>
     <div class="form-grid">
@@ -336,7 +360,9 @@
           <option value="keszpenz" data-i18n="type_keszpenz">Készpénz</option>
         </select>
         <div class="action-ops">
-          <button class="ghost" id="analysis-btn" data-i18n="btnAnalysis">Részletes elemzés</button>
+          <button class="ghost agent-btn" id="analysis-btn" data-agent="risk" data-i18n="btnAnalysis">📊 Kockázatelemző</button>
+          <button class="ghost agent-btn" id="behavior-btn" data-agent="behavior" data-i18n="btnBehavior">🧭 Viselkedési coach</button>
+          <button class="ghost agent-btn" id="tax-btn" data-agent="tax" data-i18n="btnTax">🧾 Adó-tanácsadó</button>
           <button class="ghost" id="export-pdf" data-i18n="btnExportPdf">PDF kimutatás</button>
           <button class="ghost" id="export-xlsx" data-i18n="btnExportExcel">Excel exportálása</button>
         </div>
@@ -359,6 +385,116 @@
     </table>
     <p id="empty-state" data-i18n="emptyStateNone">Még nincs felvett eszköz. Adj hozzá egyet fent.</p>
   </section>
+  </div>
+
+  <div id="tab-panel-credit" class="tab-panel" style="display:none;">
+  <section class="reveal">
+    <p class="section-label" data-i18n="sectionCreditIntro">Hitelkockázati modul</p>
+    <p class="lede" style="margin-bottom:18px;" data-i18n="creditIntroText">Modellezz egy hitel-/kölcsönportfóliót valódi banki kockázati logikával: nemteljesítési valószínűség (PD), veszteségráta nemteljesítés esetén (LGD) és kitettség (EAD) alapján számolt várható veszteséggel (Expected Loss).</p>
+    <div class="form-grid">
+      <div>
+        <label for="c-name" data-i18n="creditLabelName">Hitel neve</label>
+        <input type="text" id="c-name" data-i18n-placeholder="creditPlaceholderName" placeholder="pl. Vállalati hitel A" />
+      </div>
+      <div>
+        <label for="c-ead"><span class="info-tip" data-tip-key="tipEad">EAD</span> <span id="c-ead-unit"></span></label>
+        <input type="number" id="c-ead" placeholder="1 000 000" min="0" />
+      </div>
+      <div>
+        <label for="c-pd"><span class="info-tip" data-tip-key="tipPd">PD (%)</span></label>
+        <input type="number" id="c-pd" placeholder="5" min="0" max="100" step="0.1" />
+      </div>
+      <div>
+        <label for="c-lgd"><span class="info-tip" data-tip-key="tipLgd">LGD (%)</span></label>
+        <input type="number" id="c-lgd" placeholder="45" min="0" max="100" step="0.1" />
+      </div>
+      <button id="c-add" data-i18n="btnAdd">Hozzáad</button>
+    </div>
+    <p id="c-error" style="display:none; color:var(--danger); font-size:13px; margin-top:10px;"></p>
+  </section>
+
+  <section id="credit-summary-section" class="reveal" style="display:none;">
+    <p class="section-label" data-i18n="creditSummaryTitle">Portfólió-szintű kockázat</p>
+    <div class="stat-row">
+      <div class="stat"><p data-i18n="creditTotalEad">Összes kitettség</p><p class="num" id="c-total-ead">0 Ft</p></div>
+      <div class="stat"><p data-i18n="creditAvgPd">Súlyozott átlag PD</p><p class="num" id="c-avg-pd">0%</p></div>
+      <div class="stat"><p data-i18n="creditAvgLgd">Súlyozott átlag LGD</p><p class="num" id="c-avg-lgd">0%</p></div>
+      <div class="stat"><p data-i18n="creditTotalEl">Várható veszteség (EL)</p><p class="num" id="c-total-el">0 Ft</p></div>
+    </div>
+    <div class="sim-row" style="margin-top:20px;">
+      <label for="c-stress" style="flex-shrink:0; margin:0; font-size:13px;" data-i18n="creditStressLabel">Stressz-szorzó (PD-re):</label>
+      <input type="range" id="c-stress" min="100" max="300" value="100" step="10" />
+      <span class="sim-value num" id="c-stress-value">1.0×</span>
+    </div>
+    <p class="sim-desc" data-i18n="creditStressDesc">A csúszka egy recessziós szcenáriót szimulál: hányszorosára nő a nemteljesítési valószínűség (PD), változatlan LGD mellett. Az Expected Loss élőben újraszámol.</p>
+  </section>
+
+  <section id="credit-table-section" class="reveal" style="display:none;">
+    <p class="section-label" data-i18n="creditTableTitle">Hitelek</p>
+    <table>
+      <thead>
+        <tr>
+          <th data-i18n="creditColName">Hitel</th>
+          <th style="text-align:right;" data-i18n="creditColEad">Kitettség</th>
+          <th style="text-align:right;">PD</th>
+          <th style="text-align:right;">LGD</th>
+          <th style="text-align:right;" data-i18n="creditColEl">Várható veszteség</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="credit-body"></tbody>
+    </table>
+  </section>
+  <p id="credit-empty-state" class="reveal" data-i18n="creditEmptyState" style="text-align:center; color:var(--ink-faint); padding:20px 0;">Még nincs felvett hitel. Adj hozzá egyet fent.</p>
+  </div>
+
+  <div id="tab-panel-planning" class="tab-panel" style="display:none;">
+  <section class="reveal">
+    <p class="section-label" data-i18n="mcTitle">Monte Carlo szcenárió-motor</p>
+    <p class="lede" style="margin-bottom:18px;" data-i18n="mcIntro">A jelenlegi befektetési portfóliódból kiindulva 400 véletlenszerű jövőbeli utat szimulálunk, típusonként eltérő feltételezett éves hozam és volatilitás alapján. Az eredmény nem előrejelzés, hanem egy lehetséges tartomány illusztrációja.</p>
+    <div class="sim-row">
+      <label for="mc-horizon" style="flex-shrink:0; margin:0; font-size:13px;" data-i18n="mcHorizonLabel">Időtáv:</label>
+      <select id="mc-horizon" style="max-width:140px;">
+        <option value="5">5 év</option>
+        <option value="10" selected>10 év</option>
+        <option value="20">20 év</option>
+      </select>
+      <button id="mc-run" data-i18n="mcRunBtn">Szimuláció futtatása</button>
+    </div>
+    <div class="chart-holder" style="height:260px; margin-top:20px;"><canvas id="chart-montecarlo"></canvas></div>
+    <div class="legend" id="mc-legend" style="display:none;">
+      <span><span class="swatch" style="background:var(--accent); border-radius:50%;"></span><span data-i18n="mcLegendMedian">Medián (legvalószínűbb út)</span></span>
+      <span><span class="swatch" style="background:var(--ink-faint); border-radius:1px;"></span><span data-i18n="mcLegendBand">10–90. percentilis sáv</span></span>
+    </div>
+    <p id="mc-summary" class="sp500-caption"></p>
+  </section>
+
+  <section class="reveal">
+    <p class="section-label" data-i18n="goalTitle">Célalapú tervezés</p>
+    <div class="form-grid">
+      <div>
+        <label for="g-name" data-i18n="goalLabelName">Cél neve</label>
+        <input type="text" id="g-name" data-i18n-placeholder="goalPlaceholderName" placeholder="pl. Lakás előleg" />
+      </div>
+      <div>
+        <label for="g-amount" id="g-amount-label">Célösszeg (HUF)</label>
+        <input type="number" id="g-amount" placeholder="10 000 000" min="0" />
+      </div>
+      <div>
+        <label for="g-years" data-i18n="goalLabelYears">Hány év múlva</label>
+        <input type="number" id="g-years" placeholder="5" min="1" max="60" />
+      </div>
+      <div>
+        <label for="g-return" data-i18n="goalLabelReturn">Feltételezett éves hozam (%)</label>
+        <input type="number" id="g-return" placeholder="6" min="0" max="30" step="0.1" />
+      </div>
+      <button id="g-add" data-i18n="btnAdd">Hozzáad</button>
+    </div>
+    <p id="g-error" style="display:none; color:var(--danger); font-size:13px; margin-top:10px;"></p>
+    <div id="goal-list" style="margin-top:20px;"></div>
+    <p id="goal-empty-state" data-i18n="goalEmptyState" style="text-align:center; color:var(--ink-faint); padding:20px 0;">Még nincs felvett cél.</p>
+  </section>
+  </div>
 
   <footer>Tóth György Milán — <span data-i18n="footerRest">saját projekt: AI ügynökkel (Claude) épített, önállóan tesztelt és iteratívan finomított eszköz, 2026.</span></footer>
 
@@ -402,6 +538,8 @@ const translations = {
     captionLoadingMarket: "Élő adat betöltése…",
     captionMarketSuccess: (n) => "Forrás: Alpha Vantage — VOO (Vanguard S&P 500 ETF) élő napi záróárai, az utolsó " + n + " kereskedési nap. Az index helyett a rá épülő, tőzsdén kereskedett ETF-et mutatja, ami gyakorlatilag 1:1 leköveti azt. A szaggatott vonal a portfóliód jelenlegi összhozama — nem valós idősor, mert az eszköz eddig nem mentette a korábbi állapotokat.",
     captionMarketFail: "Az élő piaci adat jelenleg nem érhető el (valószínűleg elfogyott a beépített kulcs napi lekérési limitje). Megadhatod a saját, ingyenes Alpha Vantage kulcsodat fent, vagy próbáld meg később a \"Frissítés\" gombbal.",
+    captionCachedSuffix: "(mai, korábban lekért adat — nem kérdezzük le feleslegesen többször naponta.)",
+    captionStaleSuffix: (d) => "(figyelem: ez egy korábbi (" + d + ") mentett adat, a mai friss lekérés most nem sikerült.)",
     sectionTable: "Tételek", filterAll: "Minden típus",
     btnAnalysis: "Részletes elemzés", btnExportPdf: "PDF kimutatás", btnExportExcel: "Excel exportálása",
     colAsset: "Eszköz", colType: "Típus", colInvested: "Befektetett", colCurrent: "Jelenlegi", colReturn: "Hozam", colRisk: "Kockázat",
@@ -433,6 +571,40 @@ const translations = {
     pdfSummary: "Összesítés", pdfInvestedTotal: "Összes befektetett", pdfCurrentTotal: "Jelenlegi érték", pdfReturnTotal: "Összesített hozam",
     pdfRisk: "Kockázati szint", pdfHoldings: "Tételek",
     fxLoading: "Árfolyam betöltése…", fxFail: "Az élő árfolyam nem elérhető, HUF-ban jelenik meg.",
+    tabInvestments: "Befektetések", tabCredit: "Hitelkockázat", tabPlanning: "Tervezés",
+    sectionCreditIntro: "Hitelkockázati modul",
+    creditIntroText: "Modellezz egy hitel-/kölcsönportfóliót valódi banki kockázati logikával: nemteljesítési valószínűség (PD), veszteségráta nemteljesítés esetén (LGD) és kitettség (EAD) alapján számolt várható veszteséggel (Expected Loss).",
+    creditLabelName: "Hitel neve", creditPlaceholderName: "pl. Vállalati hitel A",
+    tipEad: "EAD (Exposure at Default): a kitettség összege — mennyi pénzt veszíthetnél el legrosszabb esetben, ha a hitel nemteljesítővé válna.",
+    tipPd: "PD (Probability of Default): annak valószínűsége, hogy az adós nem fogja tudni visszafizetni a hitelt egy adott időszakon belül.",
+    tipLgd: "LGD (Loss Given Default): nemteljesítés esetén a kitettség hány százaléka veszik el ténylegesen (a fedezetek, behajtás után).",
+    creditSummaryTitle: "Portfólió-szintű kockázat",
+    creditTotalEad: "Összes kitettség", creditAvgPd: "Súlyozott átlag PD", creditAvgLgd: "Súlyozott átlag LGD", creditTotalEl: "Várható veszteség (EL)",
+    creditStressLabel: "Stressz-szorzó (PD-re):",
+    creditStressDesc: "A csúszka egy recessziós szcenáriót szimulál: hányszorosára nő a nemteljesítési valószínűség (PD), változatlan LGD mellett. Az Expected Loss élőben újraszámol.",
+    creditTableTitle: "Hitelek", creditColName: "Hitel", creditColEad: "Kitettség", creditColEl: "Várható veszteség",
+    creditEmptyState: "Még nincs felvett hitel. Adj hozzá egyet fent.",
+    mcTitle: "Monte Carlo szcenárió-motor",
+    mcIntro: "A jelenlegi befektetési portfóliódból kiindulva 400 véletlenszerű jövőbeli utat szimulálunk, típusonként eltérő feltételezett éves hozam és volatilitás alapján. Az eredmény nem előrejelzés, hanem egy lehetséges tartomány illusztrációja.",
+    mcHorizonLabel: "Időtáv:", mcRunBtn: "Szimuláció futtatása",
+    mcLegendMedian: "Medián (legvalószínűbb út)", mcLegendBand: "10–90. percentilis sáv",
+    mcNoHoldings: "Adj hozzá legalább egy befektetést a Befektetések fülön, hogy szimulálni tudjunk.",
+    mcRunning: "Szimuláció futtatása (400 út)…",
+    mcYearLabel: (y) => y === 0 ? 'Ma' : y + '. év',
+    mcSummaryText: (p50, p10, p90) => 'Medián végérték: <strong>' + p50 + '</strong>. A szimulációk 80%-a ' + p10 + ' és ' + p90 + ' közé esett. Feltételezett éves hozam/volatilitás típusonként: részvény 8%/18%, kötvény 4%/6%, kripto 15%/65%, készpénz 2%/1% — ezek illusztratív, nem garantált értékek.',
+    goalTitle: "Célalapú tervezés", goalLabelName: "Cél neve", goalPlaceholderName: "pl. Lakás előleg",
+    goalLabelYears: "Hány év múlva", goalLabelReturn: "Feltételezett éves hozam (%)",
+    goalMonthlyLabel: "havonta szükséges", goalEmptyState: "Még nincs felvett cél.",
+    btnBehavior: "🧭 Viselkedési coach", btnTax: "🧾 Adó-tanácsadó",
+    behaviorIntro: "Ez az elemzés a portfóliód jelenlegi állapotát és összetételét nézi viselkedés-pénzügyi szempontból — nem a te személyes döntéshozatali szokásaidat követi nyomon, hanem általános mintákra figyelmeztet, amik a jelenlegi portfólió-szerkezetből következnek.",
+    behaviorHighVolatility: "A portfóliód jelentős része magas volatilitású eszköz (kripto). Az ilyen portfóliók esetén gyakori viselkedési hiba a pánikszerű eladás nagy esésnél, illetve a mohóság-vezérelt túlvásárlás nagy emelkedésnél — érdemes előre eldönteni, milyen forgatókönyvnél reagálnál, mielőtt az ténylegesen bekövetkezik.",
+    behaviorConcentrated: "Mivel a portfóliód kevés eszköztípusra koncentrálódik, egyetlen rossz hír aránytalanul nagy érzelmi hatással lehet rád — ez megnöveli az elhamarkodott döntések esélyét.",
+    behaviorDiversified: "A portfóliód diverzifikáltsága valószínűleg csökkenti az egyes eszközök miatti érzelmi hullámzást, mert egy-egy rossz nap kevésbé érinti az egészet.",
+    behaviorStable: "Nincs kirívó figyelmeztető jel a jelenlegi összetételben — ez segíthet abban, hogy nyugodtabban, kevésbé érzelemvezérelten hozz döntéseket.",
+    taxIntro: "Az alábbi pontok általános, magyarországi kontextusú tájékoztató jellegű megjegyzések — nem minősülnek adótanácsadásnak, konkrét helyzetedhez mindenképp kérj szakértői véleményt.",
+    taxTbsz: "Ha hosszú távra (5+ év) tervezel részvényekbe/kötvényekbe fektetni, érdemes megismerkedned a Tartós Befektetési Számlával (TBSZ) — 5 év után a hozam személyi jövedelemadó- és szochomentessé válhat.",
+    taxCrypto: "A kripto-eszközök adózása Magyarországon külön szabályok szerint történik (nem árfolyamnyereség-adóként, hanem elkülönülten adózó jövedelemként) — mivel van kripto a portfóliódban, ezt érdemes külön utánanézni.",
+    taxGeneral: "Befektetési jövedelmek (kamat, osztalék, árfolyamnyereség) Magyarországon jellemzően szochó- és/vagy szja-kötelesek, a pontos szabályok az eszköztípustól és a tartási időtől függenek.",
   },
   en: {
     appTitle: "Investment Journal",
@@ -466,6 +638,8 @@ const translations = {
     captionLoadingMarket: "Loading live data…",
     captionMarketSuccess: (n) => "Source: Alpha Vantage — VOO (Vanguard S&P 500 ETF) live daily closing prices, the last " + n + " trading days. Shows the exchange-traded ETF tracking the index (practically 1:1) instead of the raw index. The dashed line is your portfolio's current total return — not a real time series, since this tool didn't record past states before now.",
     captionMarketFail: "Live market data isn't available right now (the built-in key's daily limit was likely reached). You can enter your own free Alpha Vantage key above, or try again later with \"Refresh\".",
+    captionCachedSuffix: "(today's data, fetched earlier — we don't re-query more than necessary per day.)",
+    captionStaleSuffix: (d) => "(note: this is a saved value from " + d + " — today's fresh fetch just failed.)",
     sectionTable: "Holdings", filterAll: "All types",
     btnAnalysis: "Detailed analysis", btnExportPdf: "PDF statement", btnExportExcel: "Export to Excel",
     colAsset: "Asset", colType: "Type", colInvested: "Invested", colCurrent: "Current", colReturn: "Return", colRisk: "Risk",
@@ -497,6 +671,40 @@ const translations = {
     pdfSummary: "Summary", pdfInvestedTotal: "Total invested", pdfCurrentTotal: "Current value", pdfReturnTotal: "Total return",
     pdfRisk: "Risk level", pdfHoldings: "Holdings",
     fxLoading: "Loading exchange rate…", fxFail: "Live exchange rate unavailable, showing HUF.",
+    tabInvestments: "Investments", tabCredit: "Credit risk", tabPlanning: "Planning",
+    sectionCreditIntro: "Credit risk module",
+    creditIntroText: "Model a loan portfolio with real banking risk logic: probability of default (PD), loss given default (LGD), and exposure at default (EAD), combined into Expected Loss.",
+    creditLabelName: "Loan name", creditPlaceholderName: "e.g. Corporate loan A",
+    tipEad: "EAD (Exposure at Default): the amount at risk — how much you could lose in the worst case if the loan defaults.",
+    tipPd: "PD (Probability of Default): the likelihood that the borrower will fail to repay the loan within a given period.",
+    tipLgd: "LGD (Loss Given Default): the percentage of the exposure actually lost if default occurs, after collateral and recovery.",
+    creditSummaryTitle: "Portfolio-level risk",
+    creditTotalEad: "Total exposure", creditAvgPd: "Weighted average PD", creditAvgLgd: "Weighted average LGD", creditTotalEl: "Expected Loss (EL)",
+    creditStressLabel: "Stress multiplier (on PD):",
+    creditStressDesc: "The slider simulates a recession scenario: how many times the probability of default (PD) increases, with LGD unchanged. Expected Loss recalculates live.",
+    creditTableTitle: "Loans", creditColName: "Loan", creditColEad: "Exposure", creditColEl: "Expected loss",
+    creditEmptyState: "No loans yet. Add one above.",
+    mcTitle: "Monte Carlo scenario engine",
+    mcIntro: "Starting from your current investment portfolio, we simulate 400 random future paths, using different assumed annual return and volatility per asset type. The result is not a forecast, but an illustration of a plausible range.",
+    mcHorizonLabel: "Horizon:", mcRunBtn: "Run simulation",
+    mcLegendMedian: "Median (most likely path)", mcLegendBand: "10th–90th percentile band",
+    mcNoHoldings: "Add at least one investment on the Investments tab to run a simulation.",
+    mcRunning: "Running simulation (400 paths)…",
+    mcYearLabel: (y) => y === 0 ? 'Now' : 'Yr ' + y,
+    mcSummaryText: (p50, p10, p90) => 'Median final value: <strong>' + p50 + '</strong>. 80% of simulations fell between ' + p10 + ' and ' + p90 + '. Assumed annual return/volatility by type: stocks 8%/18%, bonds 4%/6%, crypto 15%/65%, cash 2%/1% — illustrative, not guaranteed figures.',
+    goalTitle: "Goal-based planning", goalLabelName: "Goal name", goalPlaceholderName: "e.g. House down payment",
+    goalLabelYears: "Years from now", goalLabelReturn: "Assumed annual return (%)",
+    goalMonthlyLabel: "needed per month", goalEmptyState: "No goals yet.",
+    btnBehavior: "🧭 Behavioral coach", btnTax: "🧾 Tax advisor",
+    behaviorIntro: "This analysis looks at your portfolio's current state and composition from a behavioral-finance angle — it doesn't track your personal decision habits, but flags general patterns that follow from the current portfolio structure.",
+    behaviorHighVolatility: "A significant part of your portfolio is in a high-volatility asset (crypto). A common behavioral mistake with such portfolios is panic-selling during sharp drops, or greed-driven overbuying during sharp rises — it's worth deciding in advance how you'd react to each scenario before it actually happens.",
+    behaviorConcentrated: "Since your portfolio is concentrated in few asset types, a single piece of bad news can have a disproportionate emotional effect — increasing the chance of hasty decisions.",
+    behaviorDiversified: "Your portfolio's diversification likely reduces the emotional swings caused by any single asset, since a bad day for one holding affects the whole less.",
+    behaviorStable: "No standout warning signs in the current composition — this can help you make calmer, less emotion-driven decisions.",
+    taxIntro: "The points below are general, Hungary-context informational notes — they do not constitute tax advice; always seek professional guidance for your specific situation.",
+    taxTbsz: "If you're planning to invest in stocks/bonds long-term (5+ years), it's worth learning about the Hungarian Long-Term Investment Account (TBSZ) — after 5 years, returns can become exempt from personal income tax and social contribution tax.",
+    taxCrypto: "Crypto assets are taxed under separate rules in Hungary (not as capital-gains tax, but as separately taxed income) — since your portfolio includes crypto, this is worth looking into specifically.",
+    taxGeneral: "Investment income (interest, dividends, capital gains) in Hungary is typically subject to social contribution and/or personal income tax, with exact rules depending on asset type and holding period.",
   }
 };
 let lang = (function () { try { return localStorage.getItem('lang') || 'hu'; } catch (e) { return 'hu'; } })();
@@ -611,52 +819,40 @@ function initReveal() {
   });
 }
 
-function withViewTransition(fn) {
-  if (document.startViewTransition) {
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduced) { fn(); return; }
-    document.startViewTransition(() => fn());
-  } else { fn(); }
-}
-
 /* ---------- Sotet mod ---------- */
 function applyThemeLabel() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   document.getElementById('theme-toggle').textContent = isDark ? '☀️ ' + (lang === 'hu' ? 'Világos mód' : 'Light mode') : '🌙 ' + (lang === 'hu' ? 'Sötét mód' : 'Dark mode');
 }
 document.getElementById('theme-toggle').addEventListener('click', () => {
-  withViewTransition(() => {
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    if (isDark) { document.documentElement.removeAttribute('data-theme'); } else { document.documentElement.setAttribute('data-theme', 'dark'); }
-    try { localStorage.setItem('theme', isDark ? 'light' : 'dark'); } catch (e) {}
-    applyThemeLabel();
-    chartInv = null; chartCur = null;
-    render();
-  });
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (isDark) { document.documentElement.removeAttribute('data-theme'); } else { document.documentElement.setAttribute('data-theme', 'dark'); }
+  try { localStorage.setItem('theme', isDark ? 'light' : 'dark'); } catch (e) {}
+  applyThemeLabel();
+  chartInv = null; chartCur = null;
+  render();
 });
 
 document.getElementById('lang-toggle').addEventListener('click', () => {
-  withViewTransition(() => {
-    lang = lang === 'hu' ? 'en' : 'hu';
-    try { localStorage.setItem('lang', lang); } catch (e) {}
-    applyStaticTranslations();
-    applyThemeLabel();
-    render();
-  });
+  lang = lang === 'hu' ? 'en' : 'hu';
+  try { localStorage.setItem('lang', lang); } catch (e) {}
+  applyStaticTranslations();
+  applyThemeLabel();
+  applyInfoTips();
+  render();
 });
 
 document.getElementById('currency-select').value = currentCurrency;
 document.getElementById('currency-select').addEventListener('change', (e) => {
-  withViewTransition(() => {
-    currentCurrency = e.target.value;
-    try { localStorage.setItem('currency', currentCurrency); } catch (e) {}
-    applyStaticTranslations();
-    render();
-  });
+  currentCurrency = e.target.value;
+  try { localStorage.setItem('currency', currentCurrency); } catch (e) {}
+  applyStaticTranslations();
+  render();
 });
 
 function animateTo(key, el, to, formatFn, duration) {
   if (rafIds[key]) cancelAnimationFrame(rafIds[key]);
+  if (typeof animState[key] !== 'number' || isNaN(animState[key])) { animState[key] = 0; }
   const from = animState[key];
   const start = performance.now();
   function step(now) {
@@ -726,9 +922,37 @@ const DEFAULT_API_KEY = 'DFDJRV0KUB37XIKO';
 function getApiKey() { try { return localStorage.getItem('av_api_key') || DEFAULT_API_KEY; } catch (e) { return DEFAULT_API_KEY; } }
 function setApiKey(key) { try { localStorage.setItem('av_api_key', key); } catch (e) {} }
 
-async function loadSp500() {
+function loadSp500Cache() {
+  try {
+    const raw = localStorage.getItem('sp500_cache');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.date || !Array.isArray(parsed.labels) || !Array.isArray(parsed.closes)) return null;
+    return parsed;
+  } catch (e) { return null; }
+}
+function saveSp500Cache(labels, closes) {
+  try { localStorage.setItem('sp500_cache', JSON.stringify({ date: new Date().toISOString().slice(0, 10), labels, closes })); } catch (e) {}
+}
+
+async function loadSp500(forceRefresh) {
   const captionEl = document.getElementById('sp500-caption');
   const keyRow = document.getElementById('api-key-row');
+  const todayKey = new Date().toISOString().slice(0, 10);
+
+  // Napi gyorsítótár: a záróár úgyis csak naponta egyszer változik, ezért nem kérdezünk
+  // le feleslegesen minden megnyitáskor — ez védi a szűkös napi API-limitet.
+  if (!forceRefresh) {
+    const cached = loadSp500Cache();
+    if (cached && cached.date === todayKey) {
+      keyRow.style.display = 'none';
+      sp500Data = { labels: cached.labels, closes: cached.closes };
+      render();
+      captionEl.textContent = t('captionMarketSuccess', cached.closes.length) + ' ' + t('captionCachedSuffix');
+      return;
+    }
+  }
+
   keyRow.style.display = 'none';
   const apiKey = getApiKey();
   captionEl.textContent = t('captionLoadingMarket');
@@ -750,11 +974,24 @@ async function loadSp500() {
       const closes = recent.map(d => Math.round(parseFloat(series[d]['4. close']) * 100) / 100);
       if (closes.some(isNaN) || closes.length === 0) throw new Error('Bad price data');
       sp500Data = { labels, closes };
+      saveSp500Cache(labels, closes);
       render();
       captionEl.textContent = t('captionMarketSuccess', closes.length);
       return;
     } catch (e) { console.error('S&P 500 attempt failed (' + attempts[i] + '):', e); }
   }
+
+  // Ha a friss lekérés sikertelen, de van BÁRMILYEN (akár korábbi napi) mentett adatunk,
+  // inkább azt mutatjuk friss hiba helyett — jobb egy kicsit elavult grafikon, mint semmi.
+  const staleCache = loadSp500Cache();
+  if (staleCache) {
+    keyRow.style.display = 'flex';
+    sp500Data = { labels: staleCache.labels, closes: staleCache.closes };
+    render();
+    captionEl.textContent = t('captionMarketSuccess', staleCache.closes.length) + ' ' + t('captionStaleSuffix', staleCache.date);
+    return;
+  }
+
   keyRow.style.display = 'flex';
   captionEl.textContent = t('captionMarketFail');
 }
@@ -1135,6 +1372,8 @@ function render() {
     try { exportPdf(viewRows, totalInv, totalCur, totalRet, tier); } catch (e) { console.error('PDF export failed:', e); alert(t('pdfExportFail')); }
   };
   document.getElementById('analysis-btn').onclick = async () => {
+    document.querySelectorAll('.agent-btn').forEach(b => b.classList.remove('active-agent'));
+    document.getElementById('analysis-btn').classList.add('active-agent');
     const box = document.getElementById('ai-box');
     if (!holdings.length) { box.classList.add('visible'); box.textContent = t('analysisNoHoldings'); return; }
     box.classList.add('visible');
@@ -1161,6 +1400,42 @@ function render() {
       console.error('Live AI call failed:', e);
       box.innerHTML = '<p style="margin:0 0 10px; font-size:12px; color:var(--warn);">' + t('aiFallbackNote') + '</p>' + localAnalysis('localLabelFallback');
     }
+  };
+
+  document.getElementById('behavior-btn').onclick = () => {
+    document.querySelectorAll('.agent-btn').forEach(b => b.classList.remove('active-agent'));
+    document.getElementById('behavior-btn').classList.add('active-agent');
+    const box = document.getElementById('ai-box');
+    box.classList.add('visible');
+    if (!holdings.length) { box.textContent = t('analysisNoHoldings'); return; }
+    const byTypeShare = {};
+    rows.forEach(r => { byTypeShare[r.type] = (byTypeShare[r.type] || 0) + r.effCurrent; });
+    const kriptoShare = totalCur > 0 ? (byTypeShare['kripto'] || 0) / totalCur : 0;
+    const distinctTypes = new Set(rows.map(r => r.type)).size;
+    const paras = [];
+    if (kriptoShare > 0.3) paras.push(t('behaviorHighVolatility'));
+    if (distinctTypes <= 1) paras.push(t('behaviorConcentrated'));
+    else if (distinctTypes >= 3) paras.push(t('behaviorDiversified'));
+    if (!paras.length) paras.push(t('behaviorStable'));
+    box.innerHTML = '<p style="margin:0 0 10px; font-weight:500;">🧭 ' + t('btnBehavior').replace('🧭 ', '') + '</p>' +
+      '<p style="margin:0 0 10px; font-size:12px; color:var(--ink-muted);">' + t('behaviorIntro') + '</p>' +
+      paras.map(p => '<p style="margin:0 0 10px;">' + p + '</p>').join('');
+  };
+
+  document.getElementById('tax-btn').onclick = () => {
+    document.querySelectorAll('.agent-btn').forEach(b => b.classList.remove('active-agent'));
+    document.getElementById('tax-btn').classList.add('active-agent');
+    const box = document.getElementById('ai-box');
+    box.classList.add('visible');
+    if (!holdings.length) { box.textContent = t('analysisNoHoldings'); return; }
+    const hasStockOrBond = rows.some(r => r.type === 'reszveny' || r.type === 'kotveny');
+    const hasCrypto = rows.some(r => r.type === 'kripto');
+    const paras = [t('taxGeneral')];
+    if (hasStockOrBond) paras.push(t('taxTbsz'));
+    if (hasCrypto) paras.push(t('taxCrypto'));
+    box.innerHTML = '<p style="margin:0 0 10px; font-weight:500;">🧾 ' + t('btnTax').replace('🧾 ', '') + '</p>' +
+      '<p style="margin:0 0 10px; font-size:12px; color:var(--ink-muted);">' + t('taxIntro') + '</p>' +
+      paras.map(p => '<p style="margin:0 0 10px;">' + p + '</p>').join('');
   };
 
   document.querySelectorAll('.sort-btn').forEach(btn => {
@@ -1215,13 +1490,269 @@ document.getElementById('api-key-save').addEventListener('click', () => {
   loadSp500();
 });
 
+/* ================= TAB VÁLTÁS ================= */
+let activeTab = (function () { try { return localStorage.getItem('activeTab') || 'investments'; } catch (e) { return 'investments'; } })();
+function switchTab(tabId) {
+  activeTab = tabId;
+  try { localStorage.setItem('activeTab', tabId); } catch (e) {}
+  ['investments', 'credit', 'planning'].forEach(id => {
+    document.getElementById('tab-panel-' + id).style.display = id === tabId ? 'block' : 'none';
+    document.getElementById('tab-btn-' + id).classList.toggle('active', id === tabId);
+  });
+  if (tabId === 'credit') { creditRender(); }
+  if (tabId === 'planning') { goalRender(); if (mcChart) { mcChart.resize(); } }
+}
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+/* ================= HITELKOCKÁZATI MODUL ================= */
+function loadLoansFromStorage() {
+  try {
+    const raw = localStorage.getItem('credit_loans');
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter(l => l && typeof l.name === 'string' && typeof l.ead === 'number' && typeof l.pd === 'number' && typeof l.lgd === 'number') : [];
+  } catch (e) { return []; }
+}
+let loans = loadLoansFromStorage();
+
+function creditTier(pdPct) {
+  if (pdPct >= 10) return { key: 'high', cls: 'risk-high' };
+  if (pdPct >= 3) return { key: 'medium', cls: 'risk-medium' };
+  return { key: 'low', cls: 'risk-low' };
+}
+
+function creditRender() {
+  const summarySection = document.getElementById('credit-summary-section');
+  const tableSection = document.getElementById('credit-table-section');
+  const emptyEl = document.getElementById('credit-empty-state');
+  document.getElementById('c-ead-unit').textContent = '(' + currentCurrency + ')';
+
+  if (!loans.length) {
+    summarySection.style.display = 'none';
+    tableSection.style.display = 'none';
+    emptyEl.style.display = 'block';
+    return;
+  }
+  summarySection.style.display = 'block';
+  tableSection.style.display = 'block';
+  emptyEl.style.display = 'none';
+
+  const stressMult = parseInt(document.getElementById('c-stress').value, 10) / 100;
+  document.getElementById('c-stress-value').textContent = stressMult.toFixed(1) + '×';
+
+  let totalEad = 0, weightedPd = 0, weightedLgd = 0, totalEl = 0;
+  const rows = loans.map(l => {
+    const stressedPd = Math.min(100, l.pd * stressMult);
+    const el = l.ead * (stressedPd / 100) * (l.lgd / 100);
+    return { ...l, stressedPd, el };
+  });
+  rows.forEach(r => { totalEad += r.ead; totalEl += r.el; });
+  if (totalEad > 0) {
+    rows.forEach(r => { weightedPd += (r.ead / totalEad) * r.stressedPd; weightedLgd += (r.ead / totalEad) * r.lgd; });
+  }
+
+  animateTo('c_ead', document.getElementById('c-total-ead'), totalEad, fmt, 700);
+  document.getElementById('c-avg-pd').textContent = weightedPd.toFixed(1) + '%';
+  document.getElementById('c-avg-lgd').textContent = weightedLgd.toFixed(1) + '%';
+  animateTo('c_el', document.getElementById('c-total-el'), totalEl, fmt, 700);
+
+  const body = document.getElementById('credit-body');
+  body.innerHTML = '';
+  rows.forEach((r, i) => {
+    const tier = creditTier(r.stressedPd);
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + r.name + '</td>' +
+      '<td class="num" style="text-align:right;">' + fmt(r.ead) + '</td>' +
+      '<td class="num" style="text-align:right;"><span class="risk-badge ' + tier.cls + '">' + r.stressedPd.toFixed(1) + '%</span></td>' +
+      '<td class="num" style="text-align:right;">' + r.lgd.toFixed(1) + '%</td>' +
+      '<td class="num" style="text-align:right; color:var(--danger);">' + fmt(r.el) + '</td>' +
+      '<td style="text-align:center;"><button data-i="' + i + '" class="del credit-del" aria-label="' + t('deleteAria') + '">✕</button></td>';
+    body.appendChild(tr);
+  });
+  document.querySelectorAll('.credit-del').forEach(btn => {
+    btn.addEventListener('click', () => { loans.splice(parseInt(btn.dataset.i), 1); saveLoans(); creditRender(); });
+  });
+}
+function saveLoans() { try { localStorage.setItem('credit_loans', JSON.stringify(loans)); } catch (e) {} }
+
+document.getElementById('c-add').addEventListener('click', () => {
+  const name = document.getElementById('c-name').value.trim();
+  const ead = parseFloat(document.getElementById('c-ead').value);
+  const pd = parseFloat(document.getElementById('c-pd').value);
+  const lgd = parseFloat(document.getElementById('c-lgd').value);
+  const errEl = document.getElementById('c-error');
+  if (!name || isNaN(ead) || ead < 0 || isNaN(pd) || pd < 0 || pd > 100 || isNaN(lgd) || lgd < 0 || lgd > 100) {
+    errEl.textContent = t('errFillFields'); errEl.style.display = 'block'; return;
+  }
+  errEl.style.display = 'none';
+  loans.push({ name, ead, pd, lgd });
+  saveLoans();
+  document.getElementById('c-name').value = ''; document.getElementById('c-ead').value = ''; document.getElementById('c-pd').value = ''; document.getElementById('c-lgd').value = '';
+  creditRender();
+});
+document.getElementById('c-stress').addEventListener('input', creditRender);
+
+/* ================= MONTE CARLO SZCENÁRIÓ-MOTOR ================= */
+const mcAssumptions = {
+  reszveny: { r: 0.08, v: 0.18 }, kotveny: { r: 0.04, v: 0.06 }, kripto: { r: 0.15, v: 0.65 }, keszpenz: { r: 0.02, v: 0.01 },
+};
+function randNormal() {
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+function runMonteCarlo(rows, horizonYears, numSims) {
+  const yearValues = [];
+  for (let s = 0; s < numSims; s++) {
+    let assetVals = rows.map(r => r.effCurrent);
+    for (let y = 0; y <= horizonYears; y++) {
+      if (y > 0) {
+        assetVals = assetVals.map((val, i) => {
+          const a = mcAssumptions[rows[i].type];
+          const shock = a.r + a.v * randNormal();
+          return Math.max(0, val * (1 + shock));
+        });
+      }
+      const total = assetVals.reduce((a, b) => a + b, 0);
+      if (!yearValues[y]) yearValues[y] = [];
+      yearValues[y].push(total);
+    }
+  }
+  return yearValues.map(vals => {
+    const sorted = [...vals].sort((a, b) => a - b);
+    const pick = (q) => sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))];
+    return { p10: pick(0.10), p50: pick(0.50), p90: pick(0.90) };
+  });
+}
+let mcChart = null;
+document.getElementById('mc-run').addEventListener('click', () => {
+  const rows = computeRows();
+  const summaryEl = document.getElementById('mc-summary');
+  if (!rows.length) { summaryEl.textContent = t('mcNoHoldings'); return; }
+  const horizon = parseInt(document.getElementById('mc-horizon').value, 10);
+  summaryEl.textContent = t('mcRunning');
+  setTimeout(() => {
+    const percentiles = runMonteCarlo(rows, horizon, 400);
+    const labels = percentiles.map((_, y) => t('mcYearLabel', y));
+    const p10 = percentiles.map(p => Math.round(p.p10));
+    const p50 = percentiles.map(p => Math.round(p.p50));
+    const p90 = percentiles.map(p => Math.round(p.p90));
+
+    try {
+      document.getElementById('mc-legend').style.display = 'flex';
+      if (mcChart) { mcChart.destroy(); }
+      mcChart = new Chart(document.getElementById('chart-montecarlo'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            { label: 'p90', data: p90, borderColor: 'transparent', backgroundColor: cssVar('--line-soft'), fill: '+1', pointRadius: 0, tension: 0.15 },
+            { label: 'p10', data: p10, borderColor: 'transparent', backgroundColor: 'transparent', fill: false, pointRadius: 0, tension: 0.15 },
+            { label: t('mcLegendMedian'), data: p50, borderColor: cssVar('--accent'), backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 0, tension: 0.15 },
+          ],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, animation: { duration: 800 },
+          scales: {
+            x: { ticks: { color: cssVar('--ink-muted'), font: { family: 'Inter', size: 10 } }, grid: { color: cssVar('--line-soft') } },
+            y: { ticks: { color: cssVar('--ink-muted'), font: { family: 'Inter', size: 10 }, callback: (v) => fmt(v) }, grid: { color: cssVar('--line-soft') } },
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: cssVar('--tooltip-bg'), titleFont: { family: 'Inter' }, bodyFont: { family: 'Inter' },
+              callbacks: { label: (ctx) => ctx.dataset.label + ': ' + fmt(ctx.parsed.y) },
+            },
+          },
+        },
+      });
+    } catch (e) {
+      console.error('Monte Carlo chart failed to render:', e);
+      document.getElementById('mc-legend').style.display = 'none';
+    }
+
+    // Az összegző szöveg a diagramtól függetlenül, mindenképp megjelenik.
+    const finalP = percentiles[percentiles.length - 1];
+    summaryEl.innerHTML = t('mcSummaryText', fmt(finalP.p50), fmt(finalP.p10), fmt(finalP.p90));
+  }, 30);
+});
+
+/* ================= CÉLALAPÚ TERVEZÉS ================= */
+function loadGoalsFromStorage() {
+  try {
+    const raw = localStorage.getItem('financial_goals');
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) { return []; }
+}
+let goals = loadGoalsFromStorage();
+function saveGoals() { try { localStorage.setItem('financial_goals', JSON.stringify(goals)); } catch (e) {} }
+
+function computeGoalRequirement(goal, currentSavingsHuf) {
+  const monthlyRate = (goal.returnPct / 100) / 12;
+  const months = goal.years * 12;
+  const futureOfCurrent = currentSavingsHuf * Math.pow(1 + monthlyRate, months);
+  const remaining = goal.amount - futureOfCurrent;
+  if (remaining <= 0) return 0;
+  if (monthlyRate === 0) return remaining / months;
+  return remaining / ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate);
+}
+function goalRender() {
+  document.getElementById('g-amount-label').textContent = (lang === 'hu' ? 'Célösszeg' : 'Target amount') + ' (' + currentCurrency + ')';
+  const listEl = document.getElementById('goal-list');
+  const emptyEl = document.getElementById('goal-empty-state');
+  if (!goals.length) { listEl.innerHTML = ''; emptyEl.style.display = 'block'; return; }
+  emptyEl.style.display = 'none';
+  const currentTotal = holdings.reduce((sum, h) => sum + h.current, 0);
+  listEl.innerHTML = goals.map((g, i) => {
+    const monthly = computeGoalRequirement(g, currentTotal);
+    return '<div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--glass-border);">' +
+      '<div><strong>' + g.name + '</strong><div style="font-size:12px; color:var(--ink-muted);">' + fmt(g.amount) + ' · ' + g.years + ' ' + (lang === 'hu' ? 'év' : 'yr') + ' · ' + g.returnPct + '%</div></div>' +
+      '<div style="text-align:right;"><div class="num" style="font-family:\'Fraunces\',serif; font-size:18px;">' + fmt(monthly) + '</div><div style="font-size:11px; color:var(--ink-faint);">' + t('goalMonthlyLabel') + '</div></div>' +
+      '<button data-i="' + i + '" class="del goal-del" aria-label="' + t('deleteAria') + '" style="margin-left:12px;">✕</button>' +
+      '</div>';
+  }).join('');
+  document.querySelectorAll('.goal-del').forEach(btn => {
+    btn.addEventListener('click', () => { goals.splice(parseInt(btn.dataset.i), 1); saveGoals(); goalRender(); });
+  });
+}
+document.getElementById('g-add').addEventListener('click', () => {
+  const name = document.getElementById('g-name').value.trim();
+  const amount = parseFloat(document.getElementById('g-amount').value);
+  const years = parseInt(document.getElementById('g-years').value, 10);
+  const returnPct = parseFloat(document.getElementById('g-return').value);
+  const errEl = document.getElementById('g-error');
+  if (!name || isNaN(amount) || amount <= 0 || isNaN(years) || years < 1 || isNaN(returnPct) || returnPct < 0) {
+    errEl.textContent = t('errFillFields'); errEl.style.display = 'block'; return;
+  }
+  errEl.style.display = 'none';
+  goals.push({ name, amount, years, returnPct });
+  saveGoals();
+  document.getElementById('g-name').value = ''; document.getElementById('g-amount').value = ''; document.getElementById('g-years').value = ''; document.getElementById('g-return').value = '';
+  goalRender();
+});
+
+/* ================= OKTATÁSI TOOLTIP-EK ================= */
+function applyInfoTips() {
+  document.querySelectorAll('[data-tip-key]').forEach(el => {
+    el.classList.add('info-tip');
+    el.setAttribute('data-tip', t(el.getAttribute('data-tip-key')));
+    el.setAttribute('tabindex', '0');
+  });
+}
+
 applyStaticTranslations();
 applyThemeLabel();
+applyInfoTips();
 initReveal();
 render();
+creditRender();
+switchTab(activeTab);
 loadSp500();
 loadFxRates();
-document.getElementById('sp500-retry').addEventListener('click', loadSp500);
+document.getElementById('sp500-retry').addEventListener('click', () => loadSp500(true));
 </script>
 </body>
 </html>
