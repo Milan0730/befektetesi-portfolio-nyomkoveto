@@ -26,7 +26,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
     --paper: #F3F1EA; --ink: #1B211F; --ink-muted: #6B6A62; --ink-faint: #6E6E6B;
@@ -65,16 +65,20 @@
   @keyframes drift1 { from { transform: translate(0,0) scale(1); } to { transform: translate(90px, 70px) scale(1.18); } }
   @keyframes drift2 { from { transform: translate(0,0) scale(1); } to { transform: translate(-70px,-50px) scale(1.12); } }
   @keyframes drift3 { from { transform: translate(0,0) scale(1); } to { transform: translate(-110px, 60px) scale(0.88); } }
-  .page { max-width: 820px; margin: 0 auto; }
-  .num { font-variant-numeric: tabular-nums; }
+  .page { max-width: 1100px; margin: 0 auto; }
+  .num { font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .bento { display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px; align-items: stretch; }
+  .bento > section { margin-bottom: 0; }
+  .bento-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+  .bento-pair > section { margin-bottom: 0; }
+  @media (max-width: 860px) {
+    .bento, .bento-pair { grid-template-columns: 1fr; }
+  }
   .header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
   h1 {
     font-family: 'Fraunces', serif; font-weight: 600; font-size: 36px; letter-spacing: -0.01em; margin: 0 0 8px;
-    background: linear-gradient(120deg, var(--accent), var(--cat-kripto), var(--cat-reszveny), var(--accent));
-    background-size: 300% 300%; -webkit-background-clip: text; background-clip: text; color: transparent;
-    animation: gradientShift 9s ease infinite;
+    color: var(--ink);
   }
-  @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
   .lede { font-size: 14px; color: var(--ink-muted); margin: 0; max-width: 62ch; }
   .header-controls { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
   .control-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
@@ -86,6 +90,18 @@
     transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease, background 0.4s ease;
   }
   section:hover { transform: translateY(-3px); border-color: var(--accent); }
+  #tab-panel-investments section { border-left: 3px solid var(--accent); }
+  #tab-panel-credit section { border-left: 3px solid var(--cat-kripto); }
+  #tab-panel-planning section { border-left: 3px solid var(--cat-reszveny); }
+  .ticker-strip {
+    display: flex; flex-wrap: wrap; border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border);
+    margin: 4px 0 32px;
+  }
+  .ticker-cell { flex: 1; min-width: 140px; padding: 16px 22px; border-right: 1px solid var(--glass-border); }
+  .ticker-cell:last-child { border-right: none; }
+  .ticker-label { font-size: 11px; color: var(--ink-muted); margin-bottom: 7px; }
+  .ticker-value { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 23px; font-weight: 500; }
+  .ticker-empty { padding: 18px 0; text-align: center; color: var(--ink-faint); font-size: 14px; border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border); margin: 4px 0 32px; }
   .section-label {
     font-size: 13px; color: var(--ink-muted); margin: 0 0 14px; border-bottom: 1px solid var(--line);
     padding-bottom: 8px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap;
@@ -232,6 +248,14 @@
     </div>
   </div>
 
+  <div class="ticker-strip reveal" id="ticker-strip" style="display:none;">
+    <div class="ticker-cell"><div class="ticker-label" data-i18n="tickerReturn">Összesített hozam</div><div class="ticker-value num" id="ticker-return">—</div></div>
+    <div class="ticker-cell"><div class="ticker-label" data-i18n="tickerHealth">Portfólió-egészség</div><div class="ticker-value num" id="ticker-health">—</div></div>
+    <div class="ticker-cell"><div class="ticker-label" data-i18n="tickerRisk">Kockázati szint</div><div class="ticker-value" id="ticker-risk">—</div></div>
+    <div class="ticker-cell"><div class="ticker-label" data-i18n="tickerAssets">Eszközök száma</div><div class="ticker-value num" id="ticker-assets">—</div></div>
+  </div>
+  <p class="ticker-empty reveal" id="ticker-empty" data-i18n="tickerEmptyState">Adj hozzá egy eszközt, hogy elinduljon az elemzés.</p>
+
   <div class="tab-bar reveal">
     <button class="tab-btn active" id="tab-btn-investments" data-tab="investments" data-i18n="tabInvestments">Befektetések</button>
     <button class="tab-btn" id="tab-btn-credit" data-tab="credit" data-i18n="tabCredit">Hitelkockázat</button>
@@ -268,6 +292,7 @@
     <p id="f-error" style="display:none;"></p>
   </section>
 
+  <div class="bento">
   <section class="reveal">
     <p class="section-label" data-i18n="sectionSummary">Összesítés</p>
     <div class="stat-row">
@@ -301,7 +326,9 @@
       </div>
     </div>
   </section>
+  </div>
 
+  <div class="bento-pair">
   <section id="history-section" class="reveal" style="display:none;">
     <p class="section-label" data-i18n="sectionHistory">Historikus nyomkövetés (saját eszköz-előzmény)</p>
     <div id="history-chart-wrap"><div class="history-holder"><canvas id="chart-history"></canvas></div></div>
@@ -318,7 +345,9 @@
     </div>
     <p class="sim-desc" data-i18n="simDesc">A csúszka egy feltételezett piaci elmozdulást szimulál, típusonként eltérő érzékenységgel (a kripto jobban mozog, mint a kötvény vagy a készpénz). A befektetett összeg nem változik, csak a jelenlegi érték és az abból számolt mutatók.</p>
   </section>
+  </div>
 
+  <div class="bento-pair">
   <section id="alloc-section" class="reveal" style="display:none;">
     <p class="section-label" data-i18n="sectionAlloc">Megoszlás típus szerint</p>
     <div class="donut-row">
@@ -341,6 +370,7 @@
     </div>
     <p class="risk-warning" id="risk-warning" style="display:none;"></p>
   </section>
+  </div>
 
   <section class="reveal">
     <p class="section-label">
@@ -424,6 +454,7 @@
     <p id="c-error" style="display:none; color:var(--danger); font-size:13px; margin-top:10px;"></p>
   </section>
 
+  <div class="bento-pair">
   <section id="credit-summary-section" class="reveal" style="display:none;">
     <p class="section-label" data-i18n="creditSummaryTitle">Portfólió-szintű kockázat</p>
     <div class="stat-row">
@@ -439,6 +470,17 @@
     </div>
     <p class="sim-desc" data-i18n="creditStressDesc">A csúszka egy recessziós szcenáriót szimulál: hányszorosára nő a nemteljesítési valószínűség (PD), változatlan LGD mellett. Az Expected Loss élőben újraszámol.</p>
   </section>
+
+  <section id="credit-donut-section" class="reveal" style="display:none;">
+    <p class="section-label" data-i18n="creditDonutTitle">Kitettség kockázati szint szerint</p>
+    <div class="chart-holder" style="height:200px;"><canvas id="chart-credit-risk"></canvas></div>
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--success); border-radius:50%;"></span><span data-i18n="riskLabel_low">Alacsony kockázat</span></span>
+      <span><span class="swatch" style="background:var(--warn); border-radius:50%;"></span><span data-i18n="riskLabel_medium">Közepes kockázat</span></span>
+      <span><span class="swatch" style="background:var(--danger); border-radius:50%;"></span><span data-i18n="riskLabel_high">Magas kockázat</span></span>
+    </div>
+  </section>
+  </div>
 
   <section id="credit-table-section" class="reveal" style="display:none;">
     <p class="section-label" data-i18n="creditTableTitle">Hitelek</p>
@@ -583,6 +625,8 @@ const translations = {
     pdfRisk: "Kockázati szint", pdfHoldings: "Tételek",
     fxLoading: "Árfolyam betöltése…", fxFail: "Az élő árfolyam nem elérhető, HUF-ban jelenik meg.",
     tabInvestments: "Befektetések", tabCredit: "Hitelkockázat", tabPlanning: "Tervezés",
+    tickerReturn: "Összesített hozam", tickerHealth: "Portfólió-egészség", tickerRisk: "Kockázati szint", tickerAssets: "Eszközök száma",
+    tickerEmptyState: "Adj hozzá egy eszközt, hogy elinduljon az elemzés.",
     sectionCreditIntro: "Hitelkockázati modul",
     creditIntroText: "Modellezz egy hitel-/kölcsönportfóliót valódi banki kockázati logikával: nemteljesítési valószínűség (PD), veszteségráta nemteljesítés esetén (LGD) és kitettség (EAD) alapján számolt várható veszteséggel (Expected Loss).",
     creditLabelName: "Hitel neve", creditPlaceholderName: "pl. Vállalati hitel A",
@@ -594,6 +638,7 @@ const translations = {
     creditStressLabel: "Stressz-szorzó (PD-re):",
     creditStressDesc: "A csúszka egy recessziós szcenáriót szimulál: hányszorosára nő a nemteljesítési valószínűség (PD), változatlan LGD mellett. Az Expected Loss élőben újraszámol.",
     creditTableTitle: "Hitelek", creditColName: "Hitel", creditColEad: "Kitettség", creditColEl: "Várható veszteség",
+    creditDonutTitle: "Kitettség kockázati szint szerint",
     creditEmptyState: "Még nincs felvett hitel. Adj hozzá egyet fent.",
     mcTitle: "Monte Carlo szcenárió-motor",
     mcIntro: "A jelenlegi befektetési portfóliódból kiindulva 400 véletlenszerű jövőbeli utat szimulálunk, típusonként eltérő feltételezett éves hozam és volatilitás alapján. Az eredmény nem előrejelzés, hanem egy lehetséges tartomány illusztrációja.",
@@ -683,6 +728,8 @@ const translations = {
     pdfRisk: "Risk level", pdfHoldings: "Holdings",
     fxLoading: "Loading exchange rate…", fxFail: "Live exchange rate unavailable, showing HUF.",
     tabInvestments: "Investments", tabCredit: "Credit risk", tabPlanning: "Planning",
+    tickerReturn: "Total return", tickerHealth: "Portfolio health", tickerRisk: "Risk level", tickerAssets: "Number of assets",
+    tickerEmptyState: "Add an asset to start the analysis.",
     sectionCreditIntro: "Credit risk module",
     creditIntroText: "Model a loan portfolio with real banking risk logic: probability of default (PD), loss given default (LGD), and exposure at default (EAD), combined into Expected Loss.",
     creditLabelName: "Loan name", creditPlaceholderName: "e.g. Corporate loan A",
@@ -694,6 +741,7 @@ const translations = {
     creditStressLabel: "Stress multiplier (on PD):",
     creditStressDesc: "The slider simulates a recession scenario: how many times the probability of default (PD) increases, with LGD unchanged. Expected Loss recalculates live.",
     creditTableTitle: "Loans", creditColName: "Loan", creditColEad: "Exposure", creditColEl: "Expected loss",
+    creditDonutTitle: "Exposure by risk level",
     creditEmptyState: "No loans yet. Add one above.",
     mcTitle: "Monte Carlo scenario engine",
     mcIntro: "Starting from your current investment portfolio, we simulate 400 random future paths, using different assumed annual return and volatility per asset type. The result is not a forecast, but an illustration of a plausible range.",
@@ -1329,6 +1377,25 @@ function render() {
     document.getElementById('badge-row').innerHTML = badges.map(b => '<span class="badge-chip">' + b + '</span>').join('');
   } else { healthSection.style.display = 'none'; }
 
+  const tickerStrip = document.getElementById('ticker-strip');
+  const tickerEmpty = document.getElementById('ticker-empty');
+  if (holdings.length && tier) {
+    tickerStrip.style.display = 'flex';
+    tickerEmpty.style.display = 'none';
+    const health = computeHealth(rows, weightedRisk, totalRet);
+    const retEl2 = document.getElementById('ticker-return');
+    retEl2.textContent = fmtPct(totalRet);
+    retEl2.style.color = totalRet >= 0 ? 'var(--success)' : 'var(--danger)';
+    document.getElementById('ticker-health').textContent = health.score + '/100';
+    const riskEl2 = document.getElementById('ticker-risk');
+    riskEl2.textContent = t('riskLabel_' + tier.key);
+    riskEl2.style.color = tier.color;
+    document.getElementById('ticker-assets').textContent = String(holdings.length);
+  } else {
+    tickerStrip.style.display = 'none';
+    tickerEmpty.style.display = 'block';
+  }
+
   if (sp500Data) {
     try { renderSp500Chart(sp500Data.labels, sp500Data.closes, holdings.length ? totalRet : null); }
     catch (e) { console.error('S&P 500 chart failed:', e); }
@@ -1526,6 +1593,7 @@ function loadLoansFromStorage() {
   } catch (e) { return []; }
 }
 let loans = loadLoansFromStorage();
+let creditDonutChart = null;
 
 function creditTier(pdPct) {
   if (pdPct >= 10) return { key: 'high', cls: 'risk-high' };
@@ -1536,17 +1604,20 @@ function creditTier(pdPct) {
 function creditRender() {
   const summarySection = document.getElementById('credit-summary-section');
   const tableSection = document.getElementById('credit-table-section');
+  const donutSection = document.getElementById('credit-donut-section');
   const emptyEl = document.getElementById('credit-empty-state');
   document.getElementById('c-ead-unit').textContent = '(' + currentCurrency + ')';
 
   if (!loans.length) {
     summarySection.style.display = 'none';
     tableSection.style.display = 'none';
+    donutSection.style.display = 'none';
     emptyEl.style.display = 'block';
     return;
   }
   summarySection.style.display = 'block';
   tableSection.style.display = 'block';
+  donutSection.style.display = 'block';
   emptyEl.style.display = 'none';
 
   const stressMult = parseInt(document.getElementById('c-stress').value, 10) / 100;
@@ -1567,6 +1638,31 @@ function creditRender() {
   document.getElementById('c-avg-pd').textContent = weightedPd.toFixed(1) + '%';
   document.getElementById('c-avg-lgd').textContent = weightedLgd.toFixed(1) + '%';
   animateTo('c_el', document.getElementById('c-total-el'), totalEl, fmt, 700);
+
+  const eadByTier = { low: 0, medium: 0, high: 0 };
+  rows.forEach(r => { eadByTier[creditTier(r.stressedPd).key] += r.ead; });
+  try {
+    const labels = [], data = [], colors = [];
+    if (eadByTier.low > 0) { labels.push(t('riskLabel_low')); data.push(Math.round(toDisplay(eadByTier.low) || 0)); colors.push(cssVar('--success')); }
+    if (eadByTier.medium > 0) { labels.push(t('riskLabel_medium')); data.push(Math.round(toDisplay(eadByTier.medium) || 0)); colors.push(cssVar('--warn')); }
+    if (eadByTier.high > 0) { labels.push(t('riskLabel_high')); data.push(Math.round(toDisplay(eadByTier.high) || 0)); colors.push(cssVar('--danger')); }
+    if (creditDonutChart) {
+      creditDonutChart.data.labels = labels;
+      creditDonutChart.data.datasets[0].data = data;
+      creditDonutChart.data.datasets[0].backgroundColor = colors;
+      creditDonutChart.update();
+    } else {
+      creditDonutChart = new Chart(document.getElementById('chart-credit-risk'), {
+        type: 'doughnut',
+        data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: cssVar('--paper'), borderWidth: 2 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '68%', animation: { duration: 900 },
+          plugins: { legend: { display: false }, tooltip: { backgroundColor: cssVar('--tooltip-bg'), titleFont: { family: 'Inter' }, bodyFont: { family: 'Inter' },
+            callbacks: { label: (ctx) => ctx.label + ': ' + Math.round(ctx.raw).toLocaleString(localeStr()) + (currentCurrency === 'HUF' ? ' Ft' : ' ' + currencySymbol[currentCurrency]) } } }
+        }
+      });
+    }
+  } catch (e) { console.error('Credit risk donut failed:', e); donutSection.style.display = 'none'; }
 
   const body = document.getElementById('credit-body');
   body.innerHTML = '';
