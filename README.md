@@ -1,4 +1,3 @@
-[README.md](https://github.com/user-attachments/files/31884005/README.md)
 # Befektetési napló
 
 Saját, önállóan tesztelt és iteratívan finomított projekt: egy böngészőben futó befektetési portfólió-nyomkövető, amelyet AI ügynökkel (Claude) építettem, miközben magam töltöttem be a tesztelő és termékgazda szerepét.

@@ -3,7 +3,18 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Befektetési napló</title>
+<title>Befektetési napló — portfólió- és hitelkockázat-elemző</title>
+<meta name="description" content="Böngészőben futó befektetési portfólió-nyomkövető: kockázati besorolás, hitelkockázati (PD/LGD/EAD) modul, Monte Carlo szimuláció, célalapú tervezés és élő piaci referencia." />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<meta property="og:title" content="Befektetési napló — portfólió- és hitelkockázat-elemző" />
+<meta property="og:description" content="Kockázati besorolás, hitelkockázati modul, Monte Carlo szimuláció, célalapú tervezés és élő piaci referencia — egyetlen böngészős eszközben." />
+<meta property="og:image" content="https://milan0730.github.io/befektetesi-portfolio-nyomkoveto/og-image.png" />
+<meta property="og:url" content="https://milan0730.github.io/befektetesi-portfolio-nyomkoveto/" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Befektetési napló — portfólió- és hitelkockázat-elemző" />
+<meta name="twitter:description" content="Kockázati besorolás, hitelkockázati modul, Monte Carlo szimuláció és élő piaci referencia egyetlen böngészős eszközben." />
+<meta name="twitter:image" content="https://milan0730.github.io/befektetesi-portfolio-nyomkoveto/og-image.png" />
 <script>
   (function () {
     try {
@@ -18,9 +29,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --paper: #F3F1EA; --ink: #1B211F; --ink-muted: #6B6A62; --ink-faint: #96938A;
-    --accent: #1F5C4F; --success: #2F7D5C; --success-bg: #E7F0EA;
-    --danger: #A6432B; --danger-bg: #F7E9E3; --warn: #A9791E; --warn-bg: #F3EBD8;
+    --paper: #F3F1EA; --ink: #1B211F; --ink-muted: #6B6A62; --ink-faint: #6E6E6B;
+    --accent: #1F5C4F; --success: #256B4C; --success-bg: #E7F0EA;
+    --danger: #A6432B; --danger-bg: #F7E9E3; --warn: #7C5810; --warn-bg: #F3EBD8;
     --line: #DAD5C8; --line-soft: #E9E5DB; --input-bg: rgba(255,255,255,0.65); --tooltip-bg: #1B211F;
     --cat-reszveny: #35577A; --cat-kotveny: #5C7A72; --cat-kripto: #B98B2E; --cat-keszpenz: #8C8676;
     --glass-bg: rgba(255,255,255,0.5); --glass-border: rgba(27,33,31,0.09);
@@ -29,7 +40,7 @@
     --blob1: rgba(31,92,79,0.22); --blob2: rgba(185,139,46,0.16); --blob3: rgba(53,87,122,0.16);
   }
   [data-theme="dark"] {
-    --paper: #10141F; --ink: #ECE8DE; --ink-muted: #A9A599; --ink-faint: #7D7A6E;
+    --paper: #10141F; --ink: #ECE8DE; --ink-muted: #A9A599; --ink-faint: #7F7F77;
     --accent: #4FB89B; --success: #5CB88F; --success-bg: #1E2B23;
     --danger: #E08B6C; --danger-bg: #332119; --warn: #D9A94A; --warn-bg: #332B18;
     --line: #3A3A34; --line-soft: #262622; --input-bg: rgba(255,255,255,0.05); --tooltip-bg: #0E1210;
